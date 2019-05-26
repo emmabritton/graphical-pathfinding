@@ -1,0 +1,78 @@
+use crate::models::Coord;
+use ggez::{Context, filesystem};
+use std::io::Read;
+use crate::{GRID_VERT_COUNT, GRID_HORZ_COUNT};
+
+pub struct Map {
+    pub idx: usize,
+    pub start: Coord,
+    pub targets: Vec<Coord>,
+    pub passable: [[bool; GRID_VERT_COUNT]; GRID_HORZ_COUNT],
+}
+
+pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
+    if let Ok(mut file) = filesystem::open(ctx, format!("/map{}", which)) {
+        let mut buffer = String::new();
+        match file.read_to_string(&mut buffer) {
+            Ok(result) => {
+                if (result + 1) < GRID_VERT_COUNT * GRID_HORZ_COUNT {
+                    println!("result: {}, required: {}", result, GRID_VERT_COUNT * GRID_HORZ_COUNT);
+                    panic!("Map {} is too small", which);
+                }
+
+                let mut start = Coord { x: -1, y: -1 };
+                let mut targets = vec![];
+                let mut passable = [[true; GRID_VERT_COUNT]; GRID_HORZ_COUNT];
+
+                let mut x = 0_usize;
+                let mut y = 0_usize;
+
+                for letter in buffer.chars() {
+                    match letter {
+                        's' => {
+                            if start.x == -1 {
+                                start = Coord { x: x as i32, y: y as i32 }
+                            } else {
+                                panic!("More than one start found in map {}", which);
+                            }
+                        }
+                        't' => targets.push(Coord { x: x as i32, y: y as i32 }),
+                        '1' => passable[x][y] = false,
+                        _ => {}
+                    }
+                    if letter != '\n' {
+                        x += 1;
+                    }
+                    if x >= GRID_HORZ_COUNT {
+                        x = 0;
+                        y += 1;
+                    }
+                    if y > GRID_VERT_COUNT {
+                        panic!("Map {} is too big", which);
+                    }
+                }
+
+                if start.x < 0 || start.y < 0 {
+                    panic!("No start found in map {}", which);
+                }
+
+                if targets.is_empty() {
+                    panic!("No targets found in map {}", which);
+                }
+
+                return Map {
+                    idx: which,
+                    start,
+                    targets,
+                    passable,
+                };
+            }
+            Err(err) => {
+                eprintln!("{}", err);
+                panic!("Failed to read map {}", which);
+            }
+        }
+    } else {
+        panic!("Map {} missing", which);
+    }
+}
