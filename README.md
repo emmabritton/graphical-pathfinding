@@ -12,3 +12,7 @@
   * **]** slower
   * **p** toggle manual mode
   * **space** advance one tick in manual mode 
+  
+  
+  
+  ![Screenshot of runner screen](https://raw.githubusercontent.com/raybritton/graphical-pathfinding/master/screenshot.png)
