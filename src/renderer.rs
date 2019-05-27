@@ -40,8 +40,8 @@ impl Renderer {
         }
     }
 
-    pub fn make_square_mesh(&mut self, ctx: &mut Context, cell_size: f32, filled: bool) -> GameResult<Rc<Mesh>> {
-        let key = format!("square_{}_{}", cell_size, filled);
+    pub fn make_rect_mesh(&mut self, ctx: &mut Context, width: f32, height: f32, filled: bool, thickness: f32) -> GameResult<Rc<Mesh>> {
+        let key = format!("rect_{}_{}_{}", width, height, filled);
         if self.mesh_cache.contains_key(&key) {
             return Ok(self.mesh_cache[&key].clone());
         } else {
@@ -50,13 +50,17 @@ impl Renderer {
             if filled {
                 mode = DrawMode::fill();
             } else {
-                mode = DrawMode::stroke(2.);
+                mode = DrawMode::stroke(thickness);
             }
-            mesh_builder.rectangle(mode, Rect::new(0., 0., cell_size, cell_size), (0.8, 0.8, 0.8, 1.).into());
+            mesh_builder.rectangle(mode, Rect::new(0., 0., width, height), (0.8, 0.8, 0.8, 1.).into());
             let mesh = Rc::new(mesh_builder.build(ctx)?);
             self.mesh_cache.insert(key, mesh.clone());
             return Ok(mesh);
         }
+    }
+
+    pub fn make_square_mesh(&mut self, ctx: &mut Context, cell_size: f32, filled: bool, thickness: f32) -> GameResult<Rc<Mesh>> {
+        return self.make_rect_mesh(ctx, cell_size, cell_size, filled, thickness);
     }
 
     pub fn draw_mesh<D: Drawable>(&mut self, ctx: &mut Context, mesh: &D, xy: DPPoint) {

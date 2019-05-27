@@ -9,6 +9,7 @@ use std::rc::Rc;
 pub struct MapPicker {
     maps: Vec<Rc<Map>>,
     selected: Option<usize>,
+    highlighted: usize,
 //    map_graphic: //use canvas
 }
 
@@ -17,6 +18,7 @@ impl MapPicker {
         MapPicker {
             maps: vec![],
             selected: None,
+            highlighted: 0
         }
     }
 }
@@ -26,6 +28,7 @@ impl MapPicker {
         for i in 0..10 {
             self.maps.push(Rc::new(read_map_file(ctx, i)));
         }
+
     }
 }
 
@@ -40,7 +43,8 @@ impl Scene for MapPicker {
         let grid_spacing = (50., 100.);
         let grid_size = (cell_size * GRID_HORZ_COUNT as f32, cell_size * GRID_VERT_COUNT as f32);
         let grid_mesh = renderer.make_grid_mesh(ctx, cell_size, GRID_HORZ_COUNT, GRID_VERT_COUNT, 150)?;
-        let square_mesh = renderer.make_square_mesh(ctx, cell_size, true)?;
+        let square_mesh = renderer.make_square_mesh(ctx, cell_size, true, 2.)?;
+        let highlight_mesh = renderer.make_rect_mesh(ctx, grid_size.0 + 8., grid_size.1 + 8., false, 6.)?;
         for x in 0..5 {
             for y in 0..2 {
                 let grid_x = x as f32 * (grid_size.0 + grid_spacing.0) + grid_offset.0;
@@ -61,16 +65,43 @@ impl Scene for MapPicker {
             }
         }
 
-        renderer.draw_text(ctx, String::from("Choose a map (0-9)"), point(750., 200.));
+        let x = self.highlighted % 5;
+        let y = self.highlighted / 5;
+        let grid_x = x as f32 * (grid_size.0 + grid_spacing.0) + grid_offset.0;
+        let grid_y = y as f32 * (grid_size.1 + grid_spacing.1) + grid_offset.1;
+        renderer.draw_coloured_mesh(ctx, highlight_mesh.as_ref(), point(grid_x - 2., grid_y - 2.), (0., 1., 1., 1.).into());
+
+        renderer.draw_text(ctx, String::from("Choose a map"), point(770., 200.));
 
         Ok(())
     }
 
     fn on_button_press(&mut self, keycode: KeyCode) {
-        if is_keycode_a_number(keycode) {
-            let number = keycode_to_num(keycode);
-            println!("Map {} selected", number);
-            self.selected = Some(number)
+        match keycode {
+            KeyCode::Up => {
+                if self.highlighted > 4 {
+                    self.highlighted -= 5;
+                }
+            },
+            KeyCode::Down => {
+                if self.highlighted < 5 {
+                    self.highlighted += 5;
+                }
+            },
+            KeyCode::Left => {
+                if self.highlighted > 0 {
+                    self.highlighted -= 1;
+                }
+            },
+            KeyCode::Right => {
+                if self.highlighted < 9 {
+                    self.highlighted += 1;
+                }
+            },
+            KeyCode::Return => {
+                self.selected = Some(self.highlighted);
+            },
+            _ => {}
         }
     }
 
