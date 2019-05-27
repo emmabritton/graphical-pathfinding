@@ -185,6 +185,14 @@ impl EventHandler for GPath {
     fn key_up_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
         match keycode {
             KeyCode::Escape | KeyCode::Q => quit(ctx),
+            KeyCode::R => {
+                let mut picker = MapPicker::new();
+                if picker.setup(ctx, &mut self.renderer.borrow_mut()).is_err() {
+                    panic!("Failed to setup map picked");
+                }
+                self.active_scene = Some(Box::new(RefCell::new(picker)));
+                self.mode = MapSelection;
+            },
             _ => {
                 if let Some(scene) = &mut self.active_scene {
                     scene.borrow_mut().on_button_press(keycode);
