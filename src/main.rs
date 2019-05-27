@@ -88,7 +88,9 @@ fn main() {
     let mut my_game = GPath::new();
 
     let mut picker = MapPicker::new();
-    picker.setup(ctx);
+    if picker.setup(ctx, &mut my_game.renderer.borrow_mut()).is_err() {
+        panic!("Failed to setup map picked");
+    }
     my_game.active_scene = Some(Box::new(RefCell::new(picker)));
 
     match event::run(ctx, event_loop, &mut my_game) {
@@ -170,21 +172,6 @@ impl EventHandler for GPath {
         if let Some(scene) = &mut self.active_scene {
             scene.borrow_mut().render(ctx, &mut self.renderer.borrow_mut())?;
         }
-
-//        let mesh = self.make_grid_mesh(ctx, CELL_SIZE)?;
-//        self.draw_mesh(ctx, mesh.as_ref(), point(GRID_START.0, GRID_START.1));
-
-//        for x in 0..GRID_HORZ_COUNT {
-//            for y in 0..GRID_VERT_COUNT {
-//                let display = format!("{},{}", x,y);
-//                let text = Text::new(TextFragment {
-//                    text: display,
-//                    scale: Some(Scale::uniform(16.)),
-//                    ..TextFragment::default()
-//                });
-//                self.draw_mesh(ctx, &text, point(x as f32 * CELL_SIZE, y as f32 * CELL_SIZE + GRID_START.1));
-//            }
-//        }
 
         self.draw_fps(ctx);
 

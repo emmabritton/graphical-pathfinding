@@ -11,8 +11,6 @@ use crate::max;
 use ggez::{Context, GameError, timer};
 use ggez::event::KeyCode;
 use std::cell::RefCell;
-use std::fs::read_dir;
-use crate::AlgoStatus::*;
 use crate::{point, CELL_SIZE, GRID_VERT_COUNT, GRID_HORZ_COUNT, GRID_START, SCREEN_WIDTH, SCREEN_HEIGHT};
 use ggez::graphics::{Text, TextFragment, Color, Scale, MeshBuilder, DrawMode, Rect};
 
