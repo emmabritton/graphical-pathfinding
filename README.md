@@ -6,7 +6,10 @@
 
 * **ESC** or **Q** will close the program
 * Map:
-  * **0 - 9** to choose a map (the first one is 0)
+  * **Up, Down, Left, Right** to highlight map
+  * **Enter/Return** to select
+* Algorithms:
+  * **0, 1** select
 * Runner:
   * **[** faster
   * **]** slower
