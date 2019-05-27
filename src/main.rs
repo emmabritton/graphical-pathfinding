@@ -4,9 +4,10 @@ mod astar;
 mod models;
 mod std_ext;
 mod maps;
+mod algo_picker;
 mod map_picker;
 mod renderer;
-mod executer;
+mod executor;
 mod ggez_ext;
 
 use ggez::{Context, ContextBuilder, GameResult, graphics, timer};
@@ -26,9 +27,10 @@ use crate::map_picker::MapPicker;
 use std::cell::RefCell;
 use crate::renderer::Renderer;
 use crate::models::Coord;
-use crate::executer::Executor;
+use crate::executor::Executor;
 use crate::astar::Astar;
 use crate::maps::Map;
+use crate::algo_picker::AlgoPicker;
 
 pub const SCREEN_WIDTH: f32 = 1920.;
 pub const SCREEN_HEIGHT: f32 = 1080.;
@@ -42,7 +44,7 @@ pub const GRID_START: (f32, f32) = (0., CELL_SIZE);
 pub enum AlgoStatus {
     InProgress((Vec<Coord>, Vec<Coord>)),
     Found(Vec<Coord>),
-    NoPath
+    NoPath,
 }
 
 pub trait Algorithm {
@@ -104,8 +106,8 @@ enum Mode {
 
 pub enum SceneParams {
     AlgoSelection { map: Rc<Map> },
-    AlgoRunner { map: Rc<Map>, algo: Rc<Box<Algorithm>> },
-    Empty
+    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Algorithm>>, algo_name: String },
+    Empty,
 }
 
 struct GPath {
@@ -141,26 +143,22 @@ impl EventHandler for GPath {
             if scene.borrow_mut().is_complete() {
                 println!("{:?} scene complete", self.mode);
                 let params = scene.borrow_mut().get_next_stage_params();
-                match self.mode {
-                    Mode::MapSelection => {
-                        match params {
-                            SceneParams::AlgoSelection { map } => {
-                                let map_clone = map.clone();
-                                let astar = Astar::new_fixed_target(map.start, map.targets.clone(), Box::new(move |xy| !xy.is_out_of_bounds(GRID_HORZ_COUNT as i32, GRID_VERT_COUNT as i32) && map_clone.passable[xy.x as usize][xy.y as usize]), GRID_WIDTH as i32, GRID_HEIGHT as i32, false);
-                                let executor = Executor::new(map.clone(), Rc::new(RefCell::new(astar)));
-                                self.active_scene = Some(Box::new(RefCell::new(executor)));
-                                self.mode = AlgoRunner;
-                                println!("Starting algo runner");
-                            },
-                            _ => panic!("Invalid output from map picker")
-                        }
-                    },
-                    Mode::AlgoSelection => {},
-                    Mode::AlgoRunner => {},
+                match params {
+                    SceneParams::AlgoSelection { map } => {
+                        let picker = AlgoPicker::new(map.clone());
+                        self.active_scene = Some(Box::new(RefCell::new(picker)));
+                        self.mode = AlgoSelection;
+                        println!("Starting algo picker");
+                    }
+                    SceneParams::AlgoRunner { map, algo, algo_name } => {
+                        let executor = Executor::new(map.clone(), algo.clone(), algo_name);
+                        self.active_scene = Some(Box::new(RefCell::new(executor)));
+                        self.mode = AlgoRunner;
+                        println!("Starting algo runner");
+                    }
+                    _ => panic!("Invalid output from map picker")
                 }
             }
-
-
         }
 
         Ok(())

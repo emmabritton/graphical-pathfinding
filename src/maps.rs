@@ -16,7 +16,7 @@ pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
         match file.read_to_string(&mut buffer) {
             Ok(result) => {
                 if (result + 1) < GRID_VERT_COUNT * GRID_HORZ_COUNT {
-                    println!("result: {}, required: {}", result, GRID_VERT_COUNT * GRID_HORZ_COUNT);
+                    println!("length: {}, required: {} (newlines are ignored)", result, GRID_VERT_COUNT * GRID_HORZ_COUNT);
                     panic!("Map {} is too small", which);
                 }
 

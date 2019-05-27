@@ -23,11 +23,12 @@ pub struct Executor {
     advance: bool,
     update_speed: f64,
     last_update: f64,
-    ticks: usize
+    ticks: usize,
+    algo_name: String
 }
 
 impl Executor {
-    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Algorithm>>) -> Executor {
+    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Algorithm>>, algo_name: String) -> Executor {
         Executor {
             map,
             algo,
@@ -35,7 +36,8 @@ impl Executor {
             advance: false,
             update_speed: 0.2,
             last_update: 0.,
-            ticks: 0
+            ticks: 0,
+            algo_name
         }
     }
 }
@@ -54,7 +56,7 @@ impl Executor {
             AlgoStatus::Found(_) => step_text = format!("Found in {} ticks", self.ticks),
             AlgoStatus::NoPath => step_text = format!("Failed after {} ticks", self.ticks)
         }
-        let display = format!("Map: {} - Algo: {}  |  {}  |  {} ", self.map.idx, "A*", advancing_text, step_text);
+        let display = format!("Map: {} - Algo: {}  |  {}  |  {} ", self.map.idx, self.algo_name, advancing_text, step_text);
         renderer.draw_text(ctx, display, point(8., 4.));
     }
 }
@@ -129,7 +131,7 @@ impl Scene for Executor {
                 });
                 let mesh = MeshBuilder::new().rectangle(DrawMode::fill(), Rect::new(0., 0., SCREEN_WIDTH, SCREEN_HEIGHT * 0.12), (0,0,0).into()).build(ctx)?;
                 renderer.draw_mesh(ctx, &mesh, point(0., SCREEN_HEIGHT * 0.44));
-                renderer.draw_mesh(ctx, &text, point(SCREEN_WIDTH * 0.5 - 150., SCREEN_HEIGHT * 0.45));
+                renderer.draw_mesh(ctx, &text, point(SCREEN_WIDTH * 0.5 - 150., SCREEN_HEIGHT * 0.47));
             }
         }
 
