@@ -7,7 +7,7 @@ pub struct Map {
     pub idx: usize,
     pub start: Coord,
     pub targets: Vec<Coord>,
-    pub passable: [[bool; GRID_VERT_COUNT]; GRID_HORZ_COUNT],
+    pub cost: [[i32; GRID_VERT_COUNT]; GRID_HORZ_COUNT],
     pub info: String,
 }
 
@@ -23,7 +23,7 @@ pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
 
                 let mut start = Coord { x: -1, y: -1 };
                 let mut targets = vec![];
-                let mut passable = [[true; GRID_VERT_COUNT]; GRID_HORZ_COUNT];
+                let mut cost = [[0; GRID_VERT_COUNT]; GRID_HORZ_COUNT];
 
                 let mut x = 0_usize;
                 let mut y = 0_usize;
@@ -41,7 +41,8 @@ pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
                             }
                         }
                         't' => targets.push(Coord { x: x as i32, y: y as i32 }),
-                        '1' => passable[x][y] = false,
+                        '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' => cost[x][y] = letter.to_digit(10).unwrap() as i32,
+                        '9' => cost[x][y] = -1,
                         _ => {}
                     }
                     if letter != '\n' {
@@ -70,7 +71,7 @@ pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
                     idx: which,
                     start,
                     targets,
-                    passable,
+                    cost,
                     info,
                 };
             }

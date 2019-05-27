@@ -5,7 +5,7 @@ use crate::Algorithm;
 use crate::AlgoStatus;
 use crate::AlgoStatus::*;
 
-pub type IsPassable = Fn(Coord) -> bool;
+pub type CostCalc = Fn(Coord) -> i32;
 pub type IsValidEnd = Fn(Coord) -> bool;
 pub type HeuristicCalc = Fn(Coord) -> i32;
 
@@ -15,7 +15,7 @@ pub struct Astar {
     height: i32,
     open_nodes: Vec<Rc<Node>>,
     closed_nodes: Vec<Rc<Node>>,
-    is_passable: Box<IsPassable>,
+    cost_calc: Box<CostCalc>,
     is_valid_end: Box<IsValidEnd>,
     heuristic_calc: Box<HeuristicCalc>,
     status: AlgoStatus,
@@ -31,7 +31,7 @@ fn get_neighbours(diagonals_allowed: bool) -> Vec<(i32,i32)> {
 }
 
 impl Astar {
-    pub fn new_fixed_target(start: Coord, ends: Vec<Coord>, is_passable: Box<IsPassable>, width: i32, height: i32, diagonal_movement_allowed: bool) -> Astar {
+    pub fn new_fixed_target(start: Coord, ends: Vec<Coord>, cost_calc: Box<CostCalc>, width: i32, height: i32, diagonal_movement_allowed: bool) -> Astar {
         let end_clone = ends.clone();
         Astar {
             width,
@@ -39,7 +39,7 @@ impl Astar {
             diagonal_movement_allowed,
             open_nodes: vec![Rc::new(start.into())],
             closed_nodes: vec![],
-            is_passable,
+            cost_calc,
             is_valid_end: Box::new(move |xy| end_clone.contains(&xy)),
             heuristic_calc: Box::new(move |xy|
                                          ends.iter().map(|end| ((xy.x - end.x).pow(2) + (xy.y - end.y).pow(2))).sum() //?
@@ -49,14 +49,14 @@ impl Astar {
         }
     }
 
-    pub fn new_open_target(start: Coord, is_valid_end: Box<IsValidEnd>, heuristic_calc: Box<HeuristicCalc>, is_passable: Box<IsPassable>, width: i32, height: i32, diagonal_movement_allowed: bool) -> Astar {
+    pub fn new_open_target(start: Coord, is_valid_end: Box<IsValidEnd>, heuristic_calc: Box<HeuristicCalc>, cost_calc: Box<CostCalc>, width: i32, height: i32, diagonal_movement_allowed: bool) -> Astar {
         Astar {
             width,
             height,
             diagonal_movement_allowed,
             open_nodes: vec![Rc::new(start.into())],
             closed_nodes: vec![],
-            is_passable,
+            cost_calc,
             is_valid_end,
             heuristic_calc,
             status: AlgoStatus::InProgress((vec![], vec![])),
@@ -105,7 +105,7 @@ impl Astar {
 
             if new_pos.is_out_of_bounds(self.width, self.height) { continue; }
 
-            if !(self.is_passable)(new_pos) { continue; }
+            if (self.cost_calc)(new_pos) < 0 { continue; }
 
             let node = Node::new(new_pos, Some(current_node.clone()));
 
@@ -118,10 +118,10 @@ impl Astar {
 
             child.g = current_node.clone().g + 1;
             child.h = (self.heuristic_calc)(child.xy);
-            child.f = child.g + child.h;
+            child.f = child.g + child.h + ((self.cost_calc)(child.xy) * 5);
 
             let is_larger = self.open_nodes.iter()
-                .any(|item| &child == item && child.g > item.g);
+                .any(|item| &child == item && child.f > item.f);
             if is_larger { continue; }
 
             self.open_nodes.push(Rc::new(child));
