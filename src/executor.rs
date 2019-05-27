@@ -22,7 +22,7 @@ pub struct Executor {
     update_speed: f64,
     last_update: f64,
     ticks: usize,
-    algo_name: String
+    algo_name: String,
 }
 
 impl Executor {
@@ -35,7 +35,7 @@ impl Executor {
             update_speed: 0.2,
             last_update: 0.,
             ticks: 0,
-            algo_name
+            algo_name,
         }
     }
 }
@@ -94,8 +94,16 @@ impl Scene for Executor {
         let square_mesh = renderer.make_square_mesh(ctx, CELL_SIZE, true, 2.)?;
         for map_x in 0..GRID_HORZ_COUNT {
             for map_y in 0..GRID_VERT_COUNT {
-                if !self.map.passable[map_x][map_y] {
+//                if self.map.cost[map_x][map_y] < 0 {
+//                    renderer.draw_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (map_x as f32 * CELL_SIZE), GRID_START.1 + (map_y as f32 * CELL_SIZE)));
+//                }
+                let cost = self.map.cost[map_x][map_y];
+                if cost < 0 {
                     renderer.draw_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (map_x as f32 * CELL_SIZE), GRID_START.1 + (map_y as f32 * CELL_SIZE)));
+                } else if cost > 0 {
+                    let cost_perc = cost as f32 / 10.;
+                    let color = (1.,1.,1., cost_perc);
+                    renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (map_x as f32 * CELL_SIZE), GRID_START.1 + (map_y as f32 * CELL_SIZE)), color.into());
                 }
             }
         }
@@ -119,7 +127,7 @@ impl Scene for Executor {
                     renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (step.x as f32 * CELL_SIZE), GRID_START.1 + (step.y as f32 * CELL_SIZE)), path_color);
                 }
                 draw_start_ends(self.map.start, self.map.targets.clone(), ctx, renderer)?;
-            },
+            }
             AlgoStatus::NoPath => {
                 let text = Text::new(TextFragment {
                     text: String::from("No path found"),
@@ -127,7 +135,7 @@ impl Scene for Executor {
                     scale: Some(Scale::uniform(60.)),
                     ..TextFragment::default()
                 });
-                let mesh = MeshBuilder::new().rectangle(DrawMode::fill(), Rect::new(0., 0., SCREEN_WIDTH, SCREEN_HEIGHT * 0.12), (0,0,0).into()).build(ctx)?;
+                let mesh = MeshBuilder::new().rectangle(DrawMode::fill(), Rect::new(0., 0., SCREEN_WIDTH, SCREEN_HEIGHT * 0.12), (0, 0, 0).into()).build(ctx)?;
                 renderer.draw_mesh(ctx, &mesh, point(0., SCREEN_HEIGHT * 0.44));
                 renderer.draw_mesh(ctx, &text, point(SCREEN_WIDTH * 0.5 - 150., SCREEN_HEIGHT * 0.47));
             }

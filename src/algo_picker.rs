@@ -61,10 +61,16 @@ impl Scene for AlgoPicker {
     fn get_next_stage_params(&self) -> SceneParams {
         let map = self.selected_map.clone();
         let map_clone = self.selected_map.clone();
-        let is_passable = Box::new(move |xy: Coord| !xy.is_out_of_bounds(GRID_HORZ_COUNT as i32, GRID_VERT_COUNT as i32) && map_clone.passable[xy.x as usize][xy.y as usize]);
+        let cost_calc = Box::new(move |xy: Coord| {
+            if xy.is_out_of_bounds(GRID_HORZ_COUNT as i32, GRID_VERT_COUNT as i32) {
+                -1
+            } else {
+                map_clone.cost[xy.x as usize][xy.y as usize]
+            }
+        });
         let algo = match self.selected.unwrap() {
-            0 => Astar::new_fixed_target(map.start, map.targets.clone(), is_passable, GRID_HORZ_COUNT as i32, GRID_VERT_COUNT as i32, false),
-            1 => Astar::new_fixed_target(map.start, map.targets.clone(), is_passable, GRID_HORZ_COUNT as i32, GRID_VERT_COUNT as i32, true),
+            0 => Astar::new_fixed_target(map.start, map.targets.clone(), cost_calc, GRID_HORZ_COUNT as i32, GRID_VERT_COUNT as i32, false),
+            1 => Astar::new_fixed_target(map.start, map.targets.clone(), cost_calc, GRID_HORZ_COUNT as i32, GRID_VERT_COUNT as i32, true),
             _ => panic!("Invalid algo: {}", self.selected.unwrap())
         };
         let algo_name = match self.selected.unwrap() {
