@@ -62,7 +62,7 @@ impl Executor {
 }
 
 fn draw_start_ends(start: Coord, targets: Vec<Coord>, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-    let indicator_mesh = renderer.make_square_mesh(ctx, CELL_SIZE, false)?;
+    let indicator_mesh = renderer.make_square_mesh(ctx, CELL_SIZE, false, 2.)?;
     renderer.draw_coloured_mesh(ctx, indicator_mesh.as_ref(), point(GRID_START.0 + (start.x as f32 * CELL_SIZE), GRID_START.1 + (start.y as f32 * CELL_SIZE)), (0.5, 1., 0.5, 1.).into());
     for target in targets {
         renderer.draw_coloured_mesh(ctx, indicator_mesh.as_ref(), point(GRID_START.0 + (target.x as f32 * CELL_SIZE), GRID_START.1 + (target.y as f32 * CELL_SIZE)), (0.5, 0.5, 1., 1.).into());
@@ -93,7 +93,7 @@ impl Scene for Executor {
         let grid_mesh = renderer.make_grid_mesh(ctx, CELL_SIZE, GRID_HORZ_COUNT, GRID_VERT_COUNT, 255)?;
         renderer.draw_mesh(ctx, grid_mesh.as_ref(), point(GRID_START.0, GRID_START.1));
 
-        let square_mesh = renderer.make_square_mesh(ctx, CELL_SIZE, true)?;
+        let square_mesh = renderer.make_square_mesh(ctx, CELL_SIZE, true, 2.)?;
         for map_x in 0..GRID_HORZ_COUNT {
             for map_y in 0..GRID_VERT_COUNT {
                 if !self.map.passable[map_x][map_y] {
