@@ -71,9 +71,14 @@ impl Renderer {
         graphics::draw(ctx, mesh, (xy, new_colour)).expect("couldn't draw");
     }
 
-    pub fn draw_text(&mut self, ctx: &mut Context, text: String, position: DPPoint) {
+    pub fn draw_white_text(&mut self, ctx: &mut Context, text: String, position: DPPoint) {
+        self.draw_text(ctx, text, position, (1.,1.,1.,1.).into());
+    }
+
+    pub fn draw_text(&mut self, ctx: &mut Context, text: String, position: DPPoint, color: Color) {
         let text = Text::new(TextFragment {
             text,
+            color: Some(color),
             scale: Some(Scale::uniform(48.)),
             ..TextFragment::default()
         });

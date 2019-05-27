@@ -38,10 +38,10 @@ impl Scene for AlgoPicker {
         algos.iter()
             .enumerate()
             .for_each(|(idx, algo)| {
-                renderer.draw_text(ctx, format!("{}) {}", idx, algo), point(offset.0, offset.1 + (line_height * idx as f32)));
+                renderer.draw_white_text(ctx, format!("{}) {}", idx, algo), point(offset.0, offset.1 + (line_height * idx as f32)));
             });
 
-        renderer.draw_text(ctx, String::from("Choose an algorithm"), point(48., 48.));
+        renderer.draw_white_text(ctx, String::from("Choose an algorithm"), point(48., 48.));
 
         Ok(())
     }

@@ -55,15 +55,14 @@ impl Executor {
             AlgoStatus::NoPath => step_text = format!("Failed after {} ticks", self.ticks)
         }
         let display = format!("Map: {} - Algo: {}  |  {}  |  {} ", self.map.idx, self.algo_name, advancing_text, step_text);
-        renderer.draw_text(ctx, display, point(8., 4.));
+        renderer.draw_white_text(ctx, display, point(8., 4.));
     }
 }
 
 fn draw_start_ends(start: Coord, targets: Vec<Coord>, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-    let indicator_mesh = renderer.make_square_mesh(ctx, CELL_SIZE, false, 2.)?;
-    renderer.draw_coloured_mesh(ctx, indicator_mesh.as_ref(), point(GRID_START.0 + (start.x as f32 * CELL_SIZE), GRID_START.1 + (start.y as f32 * CELL_SIZE)), (0.5, 1., 0.5, 1.).into());
+    renderer.draw_text(ctx, String::from("S"), point(GRID_START.0 + (start.x as f32 * CELL_SIZE) + 14., GRID_START.1 + (start.y as f32 * CELL_SIZE) + 5.), (1.,0.,1.,1.).into());
     for target in targets {
-        renderer.draw_coloured_mesh(ctx, indicator_mesh.as_ref(), point(GRID_START.0 + (target.x as f32 * CELL_SIZE), GRID_START.1 + (target.y as f32 * CELL_SIZE)), (0.5, 0.5, 1., 1.).into());
+        renderer.draw_text(ctx, String::from("E"), point(GRID_START.0 + (target.x as f32 * CELL_SIZE) + 14., GRID_START.1 + (target.y as f32 * CELL_SIZE) + 5.), (1.,0.,1.,1.).into());
     }
     Ok(())
 }
