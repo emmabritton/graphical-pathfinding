@@ -99,6 +99,8 @@ impl Scene for MapPicker {
         let grid_y = y as f32 * (grid_size.1 + grid_spacing.1) + grid_offset.1;
         renderer.draw_coloured_mesh(ctx, highlight_mesh.as_ref(), point(grid_x - 2., grid_y - 2.), (0., 1., 1., 1.).into());
 
+        renderer.draw_text(ctx, self.maps[self.highlighted].info.clone(), point(grid_offset.0, 900.));
+
         renderer.draw_text(ctx, String::from("Choose a map"), point(770., 200.));
 
         Ok(())
