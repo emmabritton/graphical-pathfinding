@@ -13,6 +13,7 @@ use ggez::event::KeyCode;
 use std::cell::RefCell;
 use crate::{point, CELL_SIZE, GRID_VERT_COUNT, GRID_HORZ_COUNT, GRID_START, SCREEN_WIDTH, SCREEN_HEIGHT};
 use ggez::graphics::{Text, TextFragment, Color, Scale, MeshBuilder, DrawMode, Rect};
+use crate::map_rendering::{draw_map_with_costs_nodes, draw_map_with_costs_path, draw_map_with_costs};
 
 pub struct Executor {
     map: Rc<Map>,
@@ -59,14 +60,6 @@ impl Executor {
     }
 }
 
-fn draw_start_ends(start: Coord, targets: Vec<Coord>, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-    renderer.draw_text(ctx, String::from("S"), point(GRID_START.0 + (start.x as f32 * CELL_SIZE) + 14., GRID_START.1 + (start.y as f32 * CELL_SIZE) + 5.), (1.,0.,1.,1.).into());
-    for target in targets {
-        renderer.draw_text(ctx, String::from("E"), point(GRID_START.0 + (target.x as f32 * CELL_SIZE) + 14., GRID_START.1 + (target.y as f32 * CELL_SIZE) + 5.), (1.,0.,1.,1.).into());
-    }
-    Ok(())
-}
-
 impl Scene for Executor {
     fn update(&mut self, ctx: &mut Context) -> Result<(), GameError> {
         if !self.auto_advance && !self.advance {
@@ -87,45 +80,12 @@ impl Scene for Executor {
     }
 
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-        let grid_mesh = renderer.make_grid_mesh(ctx, CELL_SIZE, GRID_HORZ_COUNT, GRID_VERT_COUNT, 255)?;
-        renderer.draw_mesh(ctx, grid_mesh.as_ref(), point(GRID_START.0, GRID_START.1));
-
-        let square_mesh = renderer.make_square_mesh(ctx, CELL_SIZE, true, 2.)?;
-        for map_x in 0..GRID_HORZ_COUNT {
-            for map_y in 0..GRID_VERT_COUNT {
-//                if self.map.cost[map_x][map_y] < 0 {
-//                    renderer.draw_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (map_x as f32 * CELL_SIZE), GRID_START.1 + (map_y as f32 * CELL_SIZE)));
-//                }
-                let cost = self.map.cost[map_x][map_y];
-                if cost < 0 {
-                    renderer.draw_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (map_x as f32 * CELL_SIZE), GRID_START.1 + (map_y as f32 * CELL_SIZE)));
-                } else if cost > 0 {
-                    let cost_perc = cost as f32 / 10.;
-                    let color = (1.,1.,1., cost_perc);
-                    renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (map_x as f32 * CELL_SIZE), GRID_START.1 + (map_y as f32 * CELL_SIZE)), color.into());
-                }
-            }
-        }
-
         match self.algo.borrow().get_data() {
             AlgoStatus::InProgress((open_nodes, closed_nodes)) => {
-                let open_color = (0.5, 0.5, 0.7, 0.8).into();
-                let closed_color = (0.3, 0.3, 0.5, 0.8).into();
-
-                for open in open_nodes {
-                    renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (open.x as f32 * CELL_SIZE), GRID_START.1 + (open.y as f32 * CELL_SIZE)), open_color);
-                }
-                for closed in closed_nodes {
-                    renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (closed.x as f32 * CELL_SIZE), GRID_START.1 + (closed.y as f32 * CELL_SIZE)), closed_color);
-                }
-                draw_start_ends(self.map.start, self.map.targets.clone(), ctx, renderer)?;
+                draw_map_with_costs_nodes(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), GRID_HORZ_COUNT, GRID_VERT_COUNT, open_nodes, closed_nodes)?;
             }
             AlgoStatus::Found(path) => {
-                let path_color = (0.5, 1.0, 0.5, 0.9).into();
-                for step in path {
-                    renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(GRID_START.0 + (step.x as f32 * CELL_SIZE), GRID_START.1 + (step.y as f32 * CELL_SIZE)), path_color);
-                }
-                draw_start_ends(self.map.start, self.map.targets.clone(), ctx, renderer)?;
+                draw_map_with_costs_path(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), GRID_HORZ_COUNT, GRID_VERT_COUNT, &path)?;
             }
             AlgoStatus::NoPath => {
                 let text = Text::new(TextFragment {
@@ -135,6 +95,8 @@ impl Scene for Executor {
                     ..TextFragment::default()
                 });
                 let mesh = MeshBuilder::new().rectangle(DrawMode::fill(), Rect::new(0., 0., SCREEN_WIDTH, SCREEN_HEIGHT * 0.12), (0, 0, 0).into()).build(ctx)?;
+
+                draw_map_with_costs(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(),GRID_HORZ_COUNT, GRID_VERT_COUNT)?;
                 renderer.draw_mesh(ctx, &mesh, point(0., SCREEN_HEIGHT * 0.44));
                 renderer.draw_mesh(ctx, &text, point(SCREEN_WIDTH * 0.5 - 150., SCREEN_HEIGHT * 0.47));
             }

@@ -33,7 +33,7 @@ impl Renderer {
             for y in 0..vert_count {
                 mesh_builder.line(&[point(0., y as f32 * cell_size), point(width, y as f32 * cell_size)], grid_line_width, grid_line_color)?;
             }
-            mesh_builder.rectangle(DrawMode::stroke( grid_line_width), Rect::new(0., 0., width, height), grid_line_color);
+            mesh_builder.rectangle(DrawMode::stroke(grid_line_width), Rect::new(0., 0., width, height), grid_line_color);
             let mesh = Rc::new(mesh_builder.build(ctx)?);
             self.mesh_cache.insert(key, mesh.clone());
             return Ok(mesh);
@@ -72,7 +72,7 @@ impl Renderer {
     }
 
     pub fn draw_white_text(&mut self, ctx: &mut Context, text: String, position: DPPoint) {
-        self.draw_text(ctx, text, position, (1.,1.,1.,1.).into());
+        self.draw_text(ctx, text, position, (1., 1., 1., 1.).into());
     }
 
     pub fn draw_text(&mut self, ctx: &mut Context, text: String, position: DPPoint, color: Color) {

@@ -7,6 +7,7 @@ mod maps;
 mod algo_picker;
 mod map_picker;
 mod renderer;
+mod map_rendering;
 mod executor;
 mod ggez_ext;
 
