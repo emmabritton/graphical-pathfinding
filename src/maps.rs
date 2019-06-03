@@ -7,7 +7,7 @@ pub struct Map {
     pub idx: usize,
     pub start: Coord,
     pub targets: Vec<Coord>,
-    pub cost: [[i32; GRID_VERT_COUNT]; GRID_HORZ_COUNT],
+    pub cost: Vec<Vec<i32>>,
     pub info: String,
 }
 
@@ -23,7 +23,7 @@ pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
 
                 let mut start = Coord { x: -1, y: -1 };
                 let mut targets = vec![];
-                let mut cost = [[0; GRID_VERT_COUNT]; GRID_HORZ_COUNT];
+                let mut cost = vec![vec![0; GRID_VERT_COUNT]; GRID_HORZ_COUNT];
 
                 let mut x = 0_usize;
                 let mut y = 0_usize;
