@@ -15,6 +15,7 @@ pub fn draw_map_full(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32),
 pub fn draw_map_with_costs(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, map: &Map, cols: usize, rows: usize) -> GameResult<()> {
     draw_map_grid(ctx, renderer, xy, cell_size, cols, rows)?;
     draw_map_costs(ctx, renderer, xy, cell_size, cols, rows, map)?;
+    draw_map_start_end(ctx, renderer, xy, cell_size, map.start, &map.targets)?;
 
     Ok(())
 }
@@ -78,9 +79,17 @@ fn draw_map_nodes(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), ce
 }
 
 fn draw_map_start_end(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, start: Coord, targets: &Vec<Coord>) -> GameResult<()> {
-    renderer.draw_text(ctx, String::from("S"), point(xy.0 + (start.x as f32 * cell_size) + 14., xy.1 + (start.y as f32 * cell_size) + 5.), (1., 0., 1., 1.).into());
-    for target in targets {
-        renderer.draw_text(ctx, String::from("E"), point(xy.0 + (target.x as f32 * cell_size) + 14., xy.1 + (target.y as f32 * cell_size) + 5.), (1., 0., 1., 1.).into());
+    if (cell_size < 30.) {
+        let square_mesh = renderer.make_square_mesh(ctx, cell_size, true, 2.)?;
+        renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(xy.0 + (start.x as f32 * cell_size),xy.1 + (start.y as f32 * cell_size)), (0.5, 1., 0.5, 1.).into());
+        for target in targets {
+            renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(xy.0 + (target.x as f32 * cell_size),xy.1 + (target.y as f32 * cell_size)), (1., 0.5, 0.5, 1.).into());
+        }
+    } else {
+        renderer.draw_text(ctx, String::from("S"), point(xy.0 + (start.x as f32 * cell_size) + 14., xy.1 + (start.y as f32 * cell_size) + 5.), (1., 0., 1., 1.).into());
+        for target in targets {
+            renderer.draw_text(ctx, String::from("E"), point(xy.0 + (target.x as f32 * cell_size) + 14., xy.1 + (target.y as f32 * cell_size) + 5.), (1., 0., 1., 1.).into());
+        }
     }
     Ok(())
 }
