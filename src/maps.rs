@@ -13,11 +13,11 @@ pub struct Map {
 
 impl Map {
     pub fn get_column_count(&self) -> usize {
-        self.cost[0].len()
+        self.cost.len()
     }
 
     pub fn get_row_count(&self) -> usize {
-        self.cost.len()
+        self.cost[0].len()
     }
 }
 
