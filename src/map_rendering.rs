@@ -3,7 +3,9 @@ use crate::{point, Coord, Map, Renderer};
 
 //PUBLIC
 
-pub fn draw_map_full(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, map: &Map, cols: usize, rows: usize, open_nodes: &Vec<Coord>, closed_nodes: &Vec<Coord>) -> GameResult<()> {
+pub fn draw_map_full(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, map: &Map, open_nodes: &Vec<Coord>, closed_nodes: &Vec<Coord>) -> GameResult<()> {
+    let cols = map.get_column_count();
+    let rows = map.get_row_count();
     draw_map_grid(ctx, renderer, xy, cell_size, cols, rows)?;
     draw_map_costs(ctx, renderer, xy, cell_size, cols, rows, map)?;
     draw_map_nodes(ctx, renderer, xy, cell_size, open_nodes, closed_nodes)?;
@@ -12,7 +14,9 @@ pub fn draw_map_full(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32),
     Ok(())
 }
 
-pub fn draw_map_with_costs(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, map: &Map, cols: usize, rows: usize) -> GameResult<()> {
+pub fn draw_map_with_costs(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, map: &Map) -> GameResult<()> {
+    let cols = map.get_column_count();
+    let rows = map.get_row_count();
     draw_map_grid(ctx, renderer, xy, cell_size, cols, rows)?;
     draw_map_costs(ctx, renderer, xy, cell_size, cols, rows, map)?;
     draw_map_start_end(ctx, renderer, xy, cell_size, map.start, &map.targets)?;
@@ -20,7 +24,9 @@ pub fn draw_map_with_costs(ctx: &mut Context, renderer: &mut Renderer, xy: (f32,
     Ok(())
 }
 
-pub fn draw_map_with_costs_nodes(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, map: &Map, cols: usize, rows: usize, open_nodes: &Vec<Coord>, closed_nodes: &Vec<Coord>) -> GameResult<()> {
+pub fn draw_map_with_costs_nodes(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, map: &Map, open_nodes: &Vec<Coord>, closed_nodes: &Vec<Coord>) -> GameResult<()> {
+    let cols = map.get_column_count();
+    let rows = map.get_row_count();
     draw_map_grid(ctx, renderer, xy, cell_size, cols, rows)?;
     draw_map_costs(ctx, renderer, xy, cell_size, cols, rows, map)?;
     draw_map_nodes(ctx, renderer, xy, cell_size, open_nodes, closed_nodes)?;
@@ -29,7 +35,9 @@ pub fn draw_map_with_costs_nodes(ctx: &mut Context, renderer: &mut Renderer, xy:
     Ok(())
 }
 
-pub fn draw_map_with_costs_path(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, map: &Map, cols: usize, rows: usize, path: &Vec<Coord>) -> GameResult<()> {
+pub fn draw_map_with_costs_path(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, map: &Map, path: &Vec<Coord>) -> GameResult<()> {
+    let cols = map.get_column_count();
+    let rows = map.get_row_count();
     draw_map_grid(ctx, renderer, xy, cell_size, cols, rows)?;
     draw_map_costs(ctx, renderer, xy, cell_size, cols, rows, map)?;
     draw_map_path(ctx, renderer, xy, cell_size, cols, rows, path)?;
@@ -79,7 +87,7 @@ fn draw_map_nodes(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), ce
 }
 
 fn draw_map_start_end(ctx: &mut Context, renderer: &mut Renderer, xy: (f32, f32), cell_size: f32, start: Coord, targets: &Vec<Coord>) -> GameResult<()> {
-    if (cell_size < 30.) {
+    if cell_size < 30. {
         let square_mesh = renderer.make_square_mesh(ctx, cell_size, true, 2.)?;
         renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(xy.0 + (start.x as f32 * cell_size),xy.1 + (start.y as f32 * cell_size)), (0.5, 1., 0.5, 1.).into());
         for target in targets {

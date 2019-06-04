@@ -11,6 +11,16 @@ pub struct Map {
     pub info: String,
 }
 
+impl Map {
+    pub fn get_column_count(&self) -> usize {
+        self.cost[0].len()
+    }
+
+    pub fn get_row_count(&self) -> usize {
+        self.cost.len()
+    }
+}
+
 pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
     if let Ok(mut file) = filesystem::open(ctx, format!("/map{}", which)) {
         let mut buffer = String::new();
