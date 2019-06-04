@@ -82,10 +82,10 @@ impl Scene for Executor {
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
         match self.algo.borrow().get_data() {
             AlgoStatus::InProgress((open_nodes, closed_nodes)) => {
-                draw_map_with_costs_nodes(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), GRID_HORZ_COUNT, GRID_VERT_COUNT, open_nodes, closed_nodes)?;
+                draw_map_with_costs_nodes(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), open_nodes, closed_nodes)?;
             }
             AlgoStatus::Found(path) => {
-                draw_map_with_costs_path(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), GRID_HORZ_COUNT, GRID_VERT_COUNT, &path)?;
+                draw_map_with_costs_path(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), &path)?;
             }
             AlgoStatus::NoPath => {
                 let text = Text::new(TextFragment {
@@ -96,7 +96,7 @@ impl Scene for Executor {
                 });
                 let mesh = MeshBuilder::new().rectangle(DrawMode::fill(), Rect::new(0., 0., SCREEN_WIDTH, SCREEN_HEIGHT * 0.12), (0, 0, 0).into()).build(ctx)?;
 
-                draw_map_with_costs(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(),GRID_HORZ_COUNT, GRID_VERT_COUNT)?;
+                draw_map_with_costs(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref())?;
                 renderer.draw_mesh(ctx, &mesh, point(0., SCREEN_HEIGHT * 0.44));
                 renderer.draw_mesh(ctx, &text, point(SCREEN_WIDTH * 0.5 - 150., SCREEN_HEIGHT * 0.47));
             }

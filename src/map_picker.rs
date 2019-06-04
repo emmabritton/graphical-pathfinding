@@ -58,7 +58,7 @@ impl MapPicker {
                 let grid_y = y as f32 * (grid_size.1 + grid_spacing.1) + grid_offset.1;
                 let map_idx = x + y * 5;
 
-                draw_map_with_costs(ctx, renderer, (grid_x, grid_y), cell_size, &self.maps[map_idx], GRID_HORZ_COUNT, GRID_VERT_COUNT)?;
+                draw_map_with_costs(ctx, renderer, (grid_x, grid_y), cell_size, &self.maps[map_idx])?;
 
             }
         }
