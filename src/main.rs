@@ -10,6 +10,7 @@ mod renderer;
 mod map_rendering;
 mod executor;
 mod ggez_ext;
+mod diagonal_picker;
 
 use ggez::{Context, ContextBuilder, GameResult, graphics, timer};
 use ggez::event::{self, EventHandler, KeyMods, KeyCode};
@@ -24,8 +25,9 @@ use crate::Mode::*;
 use crate::std_ext::max;
 use std::env;
 use std::path;
+use crate::diagonal_picker::DiagonalPicker;
 use crate::map_picker::MapPicker;
-use std::cell::RefCell;
+use std::cell::{RefCell};
 use crate::renderer::Renderer;
 use crate::models::Coord;
 use crate::executor::Executor;
@@ -41,6 +43,8 @@ pub const CELL_SIZE: f32 = 60.;
 pub const GRID_VERT_COUNT: usize = 17;
 pub const GRID_HORZ_COUNT: usize = 32;
 pub const GRID_START: (f32, f32) = (0., CELL_SIZE);
+pub const NODE_FREE: i32 = 0;
+pub const NODE_WALL: i32 = -1;
 
 pub enum AlgoStatus {
     InProgress((Vec<Coord>, Vec<Coord>)),
@@ -104,12 +108,80 @@ fn main() {
 enum Mode {
     MapSelection,
     AlgoSelection,
+    DiagonalSelection,
     AlgoRunner,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Algo {
+    AStar
+}
+
+impl Algo {
+    fn name(&self) -> String {
+        return match self {
+            Algo::AStar => String::from("A*"),
+        };
+    }
+
+    fn len() -> usize {
+        1
+    }
+
+    fn from_index(idx: usize) -> Algo {
+        return match idx {
+            0 => Algo::AStar,
+            _ => panic!("Invalid index: {}", idx),
+        };
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Diagonal {
+    Never,
+    NoWalls,
+    OneWall,
+    Always,
+}
+
+impl Diagonal {
+    fn name(&self) -> String {
+        return match self {
+            Diagonal::Never => String::from("Never"),
+            Diagonal::NoWalls => String::from("No walls"),
+            Diagonal::OneWall => String::from("Only one wall"),
+            Diagonal::Always => String::from("Always"),
+        };
+    }
+
+    fn len() -> usize {
+        4
+    }
+
+    fn from_index(idx: usize) -> Diagonal {
+        return match idx {
+            0 => Diagonal::Never,
+            1 => Diagonal::NoWalls,
+            2 => Diagonal::OneWall,
+            3 => Diagonal::Always,
+            _ => panic!("Invalid index: {}", idx),
+        };
+    }
+
+    fn max_walls(&self) -> usize {
+        match self {
+            Diagonal::Never => 0,
+            Diagonal::NoWalls => 0,
+            Diagonal::OneWall => 1,
+            Diagonal::Always => 2,
+        }
+    }
 }
 
 pub enum SceneParams {
     AlgoSelection { map: Rc<Map> },
-    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Algorithm>>, algo_name: String },
+    DiagonalSelection { map: Rc<Map>, algo: Algo },
+    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Algorithm>>, algo_name: String, diagonal: Diagonal },
     Empty,
 }
 
@@ -144,20 +216,21 @@ impl EventHandler for GPath {
             scene.borrow_mut().update(ctx)?;
 
             if scene.borrow_mut().is_complete() {
-                println!("{:?} scene complete", self.mode);
                 let params = scene.borrow_mut().get_next_stage_params();
                 match params {
+                    SceneParams::DiagonalSelection { map, algo } => {
+                        self.active_scene = Some(Box::new(RefCell::new(DiagonalPicker::new((map, algo)))));
+                        self.mode = DiagonalSelection;
+                    }
                     SceneParams::AlgoSelection { map } => {
                         let picker = AlgoPicker::new(map.clone());
                         self.active_scene = Some(Box::new(RefCell::new(picker)));
                         self.mode = AlgoSelection;
-                        println!("Starting algo picker");
                     }
-                    SceneParams::AlgoRunner { map, algo, algo_name } => {
-                        let executor = Executor::new(map.clone(), algo.clone(), algo_name);
+                    SceneParams::AlgoRunner { map, algo, algo_name, diagonal } => {
+                        let executor = Executor::new(map.clone(), algo.clone(), algo_name, diagonal.name());
                         self.active_scene = Some(Box::new(RefCell::new(executor)));
                         self.mode = AlgoRunner;
-                        println!("Starting algo runner");
                     }
                     _ => panic!("Invalid output from map picker")
                 }
@@ -193,7 +266,7 @@ impl EventHandler for GPath {
                 }
                 self.active_scene = Some(Box::new(RefCell::new(picker)));
                 self.mode = MapSelection;
-            },
+            }
             _ => {
                 if let Some(scene) = &mut self.active_scene {
                     scene.borrow_mut().on_button_press(keycode);

@@ -11,6 +11,12 @@ pub struct Coord {
 }
 
 impl Coord {
+    pub fn new(x: i32, y: i32) -> Coord {
+        Coord { x, y }
+    }
+}
+
+impl Coord {
     pub fn is_out_of_bounds(&self, max_x: i32, max_y: i32) -> bool {
         if self.x < 0 || self.x >= max_x { return true; }
         if self.y < 0 || self.y >= max_y { return true; }
@@ -69,6 +75,17 @@ impl Add<Coord> for Coord {
     type Output = Coord;
 
     fn add(self, rhs: Coord) -> Self::Output {
+        Coord {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl Add<&Coord> for Coord {
+    type Output = Coord;
+
+    fn add(self, rhs: &Coord) -> Self::Output {
         Coord {
             x: self.x + rhs.x,
             y: self.y + rhs.y,

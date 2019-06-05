@@ -18,6 +18,7 @@ use crate::map_rendering::{draw_map_with_costs_nodes, draw_map_with_costs_path, 
 pub struct Executor {
     map: Rc<Map>,
     algo: Rc<RefCell<Algorithm>>,
+    diagonal_mode: String,
     auto_advance: bool,
     advance: bool,
     update_speed: f64,
@@ -27,10 +28,11 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Algorithm>>, algo_name: String) -> Executor {
+    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Algorithm>>, algo_name: String, diagonal_mode: String) -> Executor {
         Executor {
             map,
             algo,
+            diagonal_mode,
             auto_advance: true,
             advance: false,
             update_speed: 0.2,
@@ -55,8 +57,8 @@ impl Executor {
             AlgoStatus::Found(_) => step_text = format!("Found in {} ticks", self.ticks),
             AlgoStatus::NoPath => step_text = format!("Failed after {} ticks", self.ticks)
         }
-        let display = format!("Map: {} - Algo: {}  |  {}  |  {} ", self.map.idx, self.algo_name, advancing_text, step_text);
-        renderer.draw_white_text(ctx, display, point(8., 4.));
+        let display = format!("Map: {}  Algo: {}  Diagonals: {}  |  {}  |  {}", self.map.idx, self.algo_name, self.diagonal_mode, advancing_text, step_text);
+        renderer.draw_white_text(ctx, display, point(8., 4.), 48.);
     }
 }
 
