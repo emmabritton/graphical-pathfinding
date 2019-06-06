@@ -84,9 +84,9 @@ fn draw_map_start_end(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f
             renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(map_offset.0 + (target.x as f32 * cell_size),map_offset.1 + (target.y as f32 * cell_size)), (1., 0.5, 0.5, 1.).into());
         }
     } else {
-        renderer.draw_text(ctx, String::from("S"), point(map_offset.0 + (start.x as f32 * cell_size) + (cell_size * 0.2), map_offset.1 + (start.y as f32 * cell_size) + 5.), (1., 0., 1., 1.).into(), cell_size * 0.8);
+        renderer.draw_text(ctx, String::from("S"), point(map_offset.0 + (start.x as f32 * cell_size) + (cell_size * 0.2), map_offset.1 + (start.y as f32 * cell_size) + 5.), (1., 0., 1., 1.).into(), cell_size * 0.8, false);
         for target in targets {
-            renderer.draw_text(ctx, String::from("E"), point(map_offset.0 + (target.x as f32 * cell_size) + (cell_size * 0.2), map_offset.1 + (target.y as f32 * cell_size) + 5.), (1., 0., 1., 1.).into(), cell_size * 0.8);
+            renderer.draw_text(ctx, String::from("E"), point(map_offset.0 + (target.x as f32 * cell_size) + (cell_size * 0.2), map_offset.1 + (target.y as f32 * cell_size) + 5.), (1., 0., 1., 1.).into(), cell_size * 0.8, false);
         }
     }
     Ok(())
@@ -104,7 +104,7 @@ fn draw_map_path(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f
 fn draw_debug_node_numbers(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, cols: usize, rows: usize) -> GameResult<()> {
     for map_x in 0..cols {
         for map_y in 0..rows {
-            renderer.draw_white_text(ctx, format!("{},{}", map_x, map_y), point(map_offset.0 + map_x as f32 * cell_size, map_offset.1 + map_y as f32 * cell_size), 20.);
+            renderer.draw_white_text(ctx, format!("{},{}", map_x, map_y), point(map_offset.0 + map_x as f32 * cell_size, map_offset.1 + map_y as f32 * cell_size), 20., false);
         }
     }
 

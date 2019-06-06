@@ -47,10 +47,48 @@ impl MapPicker {
         Ok(())
     }
 
+    fn get_cell_size_for_screen_width(width: f32) -> f32 {
+        match width {
+           res if res >= 3840. => return 16.,
+           res if res >= 2560. => return 14.,
+           res if res >= 1920. => return 10.,
+           res if res >= 1366. => return 8.,
+           res if res >= 1280. => return 7.,
+           res if res >= 1024. => return 6.,
+            _ => return 4.
+        }
+    }
+
+    fn get_spacing_for_screen_width(width: f32) -> f32 {
+        match width {
+            res if res >= 4096. => return 234.,
+            res if res >= 3840. => return 200.,
+            res if res >= 1600. => return 50.,
+            res if res >= 1400. => return 20.,
+            res if res >= 1366. => return 12.,
+            res if res >= 1280. => return 25.,
+            res if res >= 1024. => return 10.,
+            _ => return 25.
+        }
+    }
+
     fn draw_maps(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-        let cell_size = 10.;
-        let grid_offset = (60., 400.);
-        let grid_spacing = (50., 100.);
+        //Layout for diff screen res
+        //4096: Grid width: 512   Spacing: 234    Offset: 300  |  16
+        //3840: Grid width: 512   Spacing: 200    Offset: 240  |  16
+        //2560: Grid width: 448   Spacing: 50     Offset: 60   |  14
+        //1920: Grid width: 320   Spacing: 50     Offset: 60   |  10
+        //1600: Grid width: 256   Spacing: 50     Offset: 60   |   8
+        //1400: Grid width: 256   Spacing: 20     Offset: 20   |   8
+        //1366: Grid width: 256   Spacing: 12     Offset: 18   |   8
+        //1280: Grid width: 224   Spacing: 25     Offset: 30   |   7
+        //1024: Grid width: 192   Spacing: 10     Offset: 12   |   6
+        // 800: Grid width: 128   Spacing: 25     Offset: 30   |   4
+        let screen_size = renderer.get_screen_size(ctx);
+        let cell_size = MapPicker::get_cell_size_for_screen_width(screen_size.0);
+        let grid_spacing = (MapPicker::get_spacing_for_screen_width(screen_size.0), 100.);
+        let remaining = screen_size.0 - ((cell_size * GRID_HORZ_COUNT as f32 * 5.) + (grid_spacing.0 * 4.));
+        let grid_offset = (remaining / 2., 400.);
         let grid_size = (cell_size * GRID_HORZ_COUNT as f32, cell_size * GRID_VERT_COUNT as f32);
         for x in 0..5 {
             for y in 0..2 {
@@ -72,14 +110,16 @@ impl Scene for MapPicker {
     }
 
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-        let cell_size = 10.;
-        let grid_offset = (60., 400.);
-        let grid_spacing = (50., 100.);
+        let screen_size = renderer.get_screen_size(ctx);
+        let cell_size = MapPicker::get_cell_size_for_screen_width(screen_size.0);
+        let grid_spacing = (MapPicker::get_spacing_for_screen_width(screen_size.0), 100.);
+        let remaining = screen_size.0 - ((cell_size * GRID_HORZ_COUNT as f32 * 5.) + (grid_spacing.0 * 4.));
+        let grid_offset = (remaining / 2., 400.);
         let grid_size = (cell_size * GRID_HORZ_COUNT as f32, cell_size * GRID_VERT_COUNT as f32);
         let highlight_mesh = renderer.make_rect_mesh(ctx, grid_size.0 + 8., grid_size.1 + 8., false, 6.)?;
 
         let params = DrawParam::new()
-            .dest(point(0.,1080.))
+            .dest(point(0.,screen_size.1))
             .scale(Vector2 {x: 1., y: -1.}); //Images are drawn upside down due to ggez bug #304
         graphics::draw(ctx, self.map_image.as_ref().unwrap(), params)?;
 
@@ -89,9 +129,9 @@ impl Scene for MapPicker {
         let grid_y = y as f32 * (grid_size.1 + grid_spacing.1) + grid_offset.1;
         renderer.draw_coloured_mesh(ctx, highlight_mesh.as_ref(), point(grid_x - 2., grid_y - 2.), (0., 1., 1., 1.).into());
 
-        renderer.draw_white_text(ctx, self.maps[self.highlighted].info.clone(), point(grid_offset.0, 900.), 48.);
+        renderer.draw_white_text(ctx, self.maps[self.highlighted].info.clone(), point(grid_offset.0, 900.), 48., false);
 
-        renderer.draw_white_text(ctx, String::from("Choose a map"), point(770., 200.), 48.);
+        renderer.draw_white_text(ctx, String::from("Choose a map"), point(screen_size.0 / 2., 200.), 48., true);
 
         Ok(())
     }

@@ -86,10 +86,10 @@ impl Scene for DiagonalPicker {
 
         let list_mesh = renderer.make_list_indicator_mesh(ctx, 30.)?;
 
-        renderer.draw_white_text(ctx, "Choose how to handle diagonals", title_offset, 48.);
+        renderer.draw_white_text(ctx, "Choose how to handle diagonals", title_offset, 48., false);
 
         for i in 0..Diagonal::len() {
-            renderer.draw_white_text(ctx, Diagonal::from_index(i).name(), point(text_offset.x, text_offset.y + (text_spacing * i as f32)), 48.);
+            renderer.draw_white_text(ctx, Diagonal::from_index(i).name(), point(text_offset.x, text_offset.y + (text_spacing * i as f32)), 48., false);
         }
 
         renderer.draw_mesh(ctx, list_mesh.as_ref(), point(text_offset.x - 50., text_offset.y + 8. + (self.highlighted as f32 * text_spacing)));
