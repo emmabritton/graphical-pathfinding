@@ -6,6 +6,7 @@ use crate::renderer::*;
 use crate::Diagonal;
 use crate::Algo;
 use crate::Astar;
+use crate::dijkstra::Dijkstra;
 use crate::map_rendering::draw_map_with_costs_path;
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -149,17 +150,15 @@ impl Scene for DiagonalPicker {
                 map_clone.cost[xy.x as usize][xy.y as usize]
             }
         });
-        let algo = match self.params.1 {
-            Algo::AStar => Astar::new_fixed_target(self.params.0.start, self.params.0.targets.clone(), cost_calc, columns, rows, diagonal),
-        };
-        let algo_name = match self.params.1 {
-            Algo::AStar => String::from("A*")
+        let algo: Box<Algorithm> = match self.params.1 {
+            Algo::AStar => Box::new(Astar::new_fixed_target(self.params.0.start, self.params.0.targets.clone(), cost_calc, columns, rows, diagonal)),
+            Algo::Dijkstra => Box::new(Dijkstra::new_fixed_target(self.params.0.start, self.params.0.targets.clone(), cost_calc, columns, rows, diagonal))
         };
         SceneParams::AlgoRunner {
             map: self.params.0.clone(),
             diagonal,
-            algo: Rc::new(RefCell::new((algo))),
-            algo_name,
+            algo: Rc::new(RefCell::new(algo)),
+            algo_name: self.params.1.name(),
         }
     }
 }

@@ -1,6 +1,6 @@
 ## Graphic Pathfinding
 
-(Only has A* at the moment)
+(Only has A* and Dijkstra at the moment)
 
 #### Keys
 * Anytime:
