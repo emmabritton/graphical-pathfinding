@@ -1,6 +1,7 @@
 extern crate ggez;
 
 mod astar;
+mod dijkstra;
 mod models;
 mod std_ext;
 mod maps;
@@ -113,23 +114,26 @@ enum Mode {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Algo {
-    AStar
+    AStar,
+    Dijkstra
 }
 
 impl Algo {
     fn name(&self) -> String {
         return match self {
             Algo::AStar => String::from("A*"),
+            Algo::Dijkstra => String::from("Dijkstra")
         };
     }
 
     fn len() -> usize {
-        1
+        2
     }
 
     fn from_index(idx: usize) -> Algo {
         return match idx {
             0 => Algo::AStar,
+            1 => Algo::Dijkstra,
             _ => panic!("Invalid index: {}", idx),
         };
     }
@@ -180,14 +184,13 @@ impl Diagonal {
 pub enum SceneParams {
     AlgoSelection { map: Rc<Map> },
     DiagonalSelection { map: Rc<Map>, algo: Algo },
-    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Algorithm>>, algo_name: String, diagonal: Diagonal },
+    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal: Diagonal },
     Empty,
 }
 
 struct GPath {
     mode: Mode,
     active_scene: Option<Box<RefCell<Scene>>>,
-    //this seems questionable
     renderer: Rc<RefCell<Renderer>>,
 }
 
@@ -227,11 +230,11 @@ impl EventHandler for GPath {
                         self.mode = AlgoSelection;
                     }
                     SceneParams::AlgoRunner { map, algo, algo_name, diagonal } => {
-                        let executor = Executor::new(map.clone(), algo.clone(), algo_name, diagonal.name());
+                        let executor = Executor::new(map.clone(), algo, algo_name, diagonal.name());
                         self.active_scene = Some(Box::new(RefCell::new(executor)));
                         self.mode = AlgoRunner;
                     }
-                    _ => panic!("Invalid output from map picker")
+                    _ => panic!("Invalid output from active scene")
                 }
             }
         }

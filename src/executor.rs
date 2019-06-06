@@ -4,7 +4,6 @@ use crate::Algorithm;
 use crate::Scene;
 use crate::AlgoStatus;
 use crate::Renderer;
-use crate::Coord;
 use crate::SceneParams;
 use crate::SceneParams::Empty;
 use crate::max;
@@ -17,7 +16,7 @@ use crate::map_rendering::{draw_map_with_costs_nodes, draw_map_with_costs_path, 
 
 pub struct Executor {
     map: Rc<Map>,
-    algo: Rc<RefCell<Algorithm>>,
+    algo: Rc<RefCell<Box<Algorithm>>>,
     diagonal_mode: String,
     auto_advance: bool,
     advance: bool,
@@ -28,7 +27,7 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Algorithm>>, algo_name: String, diagonal_mode: String) -> Executor {
+    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal_mode: String) -> Executor {
         Executor {
             map,
             algo,
@@ -51,13 +50,12 @@ impl Executor {
         } else {
             advancing_text = String::from("Manual");
         }
-        let step_text;
-        match self.algo.borrow().get_data() {
-            AlgoStatus::InProgress(_) => step_text = format!("Tick {}", self.ticks),
-            AlgoStatus::Found(_) => step_text = format!("Found in {} ticks", self.ticks),
-            AlgoStatus::NoPath => step_text = format!("Failed after {} ticks", self.ticks)
-        }
-        let display = format!("Map: {}  Algo: {}  Diagonals: {}  |  {}  |  {}", self.map.idx, self.algo_name, self.diagonal_mode, advancing_text, step_text);
+        let step_text= match self.algo.borrow().get_data() {
+            AlgoStatus::InProgress(_) => format!("{} | Tick {}", advancing_text, self.ticks),
+            AlgoStatus::Found(path) => format!("Found: {} ticks, Path: {} tiles", self.ticks, path.len()),
+            AlgoStatus::NoPath => format!("Failed after {} ticks", self.ticks)
+        };
+        let display = format!("Map: {}  Algo: {}  Diagonals: {}  |  {}", self.map.idx, self.algo_name, self.diagonal_mode, step_text);
         renderer.draw_white_text(ctx, display, point(8., 4.), 48., false);
     }
 }
