@@ -9,7 +9,6 @@ mod map_picker;
 mod renderer;
 mod map_rendering;
 mod executor;
-mod ggez_ext;
 mod diagonal_picker;
 
 use ggez::{Context, ContextBuilder, GameResult, graphics, timer};
