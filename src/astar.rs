@@ -93,10 +93,12 @@ fn get_neighbours(diagonal: Diagonal, cost_calc: Rc<Box<CostCalc>>, xy: Coord) -
     add_cardinal(Direction::Left, cost_calc.clone(), xy.clone(), &mut results);
     add_cardinal(Direction::Right, cost_calc.clone(), xy.clone(), &mut results);
 
-    add_diagonal(Direction::TopRight, cost_calc.clone(), xy.clone(), &mut results, diagonal);
-    add_diagonal(Direction::BottomRight, cost_calc.clone(), xy.clone(), &mut results, diagonal);
-    add_diagonal(Direction::TopLeft, cost_calc.clone(), xy.clone(), &mut results, diagonal);
-    add_diagonal(Direction::BottomLeft, cost_calc.clone(), xy.clone(), &mut results, diagonal);
+    if diagonal != Diagonal::Never {
+        add_diagonal(Direction::TopRight, cost_calc.clone(), xy.clone(), &mut results, diagonal);
+        add_diagonal(Direction::BottomRight, cost_calc.clone(), xy.clone(), &mut results, diagonal);
+        add_diagonal(Direction::TopLeft, cost_calc.clone(), xy.clone(), &mut results, diagonal);
+        add_diagonal(Direction::BottomLeft, cost_calc.clone(), xy.clone(), &mut results, diagonal);
+    }
 
     return results;
 }
