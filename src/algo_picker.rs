@@ -35,12 +35,12 @@ impl Scene for AlgoPicker {
         let list_mesh = renderer.make_list_indicator_mesh(ctx, 30.)?;
 
         for i in 0..Algo::len() {
-            renderer.draw_white_text(ctx, Algo::from_index(i).name(), point(offset.0, offset.1 + (line_height * i as f32)), 48.);
+            renderer.draw_white_text(ctx, Algo::from_index(i).name(), point(offset.0, offset.1 + (line_height * i as f32)), 48., false);
         }
 
         renderer.draw_mesh(ctx, list_mesh.as_ref(), point(310., offset.1 + 8. + (self.highlighted as f32 * line_height)));
 
-        renderer.draw_white_text(ctx, String::from("Choose an algorithm"), point(360., 48.), 48.);
+        renderer.draw_white_text(ctx, String::from("Choose an algorithm"), point(360., 48.), 48., false);
 
         Ok(())
     }

@@ -58,7 +58,7 @@ impl Executor {
             AlgoStatus::NoPath => step_text = format!("Failed after {} ticks", self.ticks)
         }
         let display = format!("Map: {}  Algo: {}  Diagonals: {}  |  {}  |  {}", self.map.idx, self.algo_name, self.diagonal_mode, advancing_text, step_text);
-        renderer.draw_white_text(ctx, display, point(8., 4.), 48.);
+        renderer.draw_white_text(ctx, display, point(8., 4.), 48., false);
     }
 }
 

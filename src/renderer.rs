@@ -17,6 +17,13 @@ impl Renderer {
 }
 
 impl Renderer {
+    pub fn get_screen_size(&self, ctx: &mut Context) -> (f32, f32) {
+        return graphics::window(ctx).get_inner_size()
+            .map(|size| size.to_physical(graphics::hidpi_factor(ctx) as f64))
+            .map(|physical| (physical.width as f32, physical.height as f32))
+            .expect("Failed to get/convert window size");
+    }
+
     pub fn make_grid_mesh(&mut self, ctx: &mut Context, cell_size: f32, horz_count: usize, vert_count: usize, intensity: u8) -> GameResult<Rc<Mesh>> {
         let width = cell_size * horz_count as f32;
         let height = cell_size * vert_count as f32;
@@ -112,17 +119,21 @@ impl Renderer {
         graphics::draw(ctx, mesh, (xy, new_colour)).expect("couldn't draw");
     }
 
-    pub fn draw_white_text<S: Into<String>>(&mut self, ctx: &mut Context, text: S, position: DPPoint, font_size: f32) {
-        self.draw_text(ctx, text, position, (1., 1., 1., 1.).into(), font_size);
+    pub fn draw_white_text<S: Into<String>>(&mut self, ctx: &mut Context, text: S, position: DPPoint, font_size: f32, centered: bool) {
+        self.draw_text(ctx, text, position, (1., 1., 1., 1.).into(), font_size, centered);
     }
 
-    pub fn draw_text<S: Into<String>>(&mut self, ctx: &mut Context, text: S, position: DPPoint, color: Color, font_size: f32) {
+    pub fn draw_text<S: Into<String>>(&mut self, ctx: &mut Context, text: S, position: DPPoint, color: Color, font_size: f32, centered: bool) {
         let text = Text::new(TextFragment {
             text: text.into(),
             color: Some(color),
             scale: Some(Scale::uniform(font_size)),
             ..TextFragment::default()
         });
-        self.draw_mesh(ctx, &text, position);
+        let mut xy = position;
+        if centered {
+            xy = point(position.x - (text.width(ctx) as f32 / 2.), position.y);
+        }
+        self.draw_mesh(ctx, &text, xy);
     }
 }
