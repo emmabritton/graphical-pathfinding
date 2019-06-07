@@ -2,9 +2,10 @@ use std::rc::Rc;
 use crate::models::{Coord, Node};
 use crate::std_ext::RcBreaker;
 use crate::Algorithm;
-use crate::{Diagonal, NODE_WALL};
+use crate::{Diagonal};
 use crate::AlgoStatus;
 use crate::AlgoStatus::*;
+use crate::algo::NODE_WALL;
 
 pub type CostCalc = Fn(Coord) -> i32;
 pub type IsValidEnd = Fn(Coord) -> bool;

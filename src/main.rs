@@ -11,6 +11,10 @@ mod renderer;
 mod map_rendering;
 mod executor;
 mod diagonal_picker;
+mod heuristic;
+mod heuristic_picker;
+mod diagonal;
+mod algo;
 
 use ggez::{Context, ContextBuilder, GameResult, graphics, timer};
 use ggez::event::{self, EventHandler, KeyMods, KeyCode};
@@ -21,19 +25,22 @@ use ggez::graphics::TextFragment;
 use ggez::graphics::Scale;
 use ggez::quit;
 use std::rc::Rc;
-use crate::Mode::*;
 use crate::std_ext::max;
 use std::env;
 use std::path;
 use crate::diagonal_picker::DiagonalPicker;
 use crate::map_picker::MapPicker;
-use std::cell::{RefCell};
+use std::cell::RefCell;
 use crate::renderer::Renderer;
 use crate::models::Coord;
 use crate::executor::Executor;
 use crate::astar::Astar;
 use crate::maps::Map;
+use crate::algo::{Algorithm, Algo, AlgoStatus};
+use crate::diagonal::*;
 use crate::algo_picker::AlgoPicker;
+use crate::heuristic::Heuristic;
+use crate::heuristic_picker::HeuristicPicker;
 
 pub const SCREEN_WIDTH: f32 = 1920.;
 pub const SCREEN_HEIGHT: f32 = 1080.;
@@ -43,19 +50,6 @@ pub const CELL_SIZE: f32 = 60.;
 pub const GRID_VERT_COUNT: usize = 17;
 pub const GRID_HORZ_COUNT: usize = 32;
 pub const GRID_START: (f32, f32) = (0., CELL_SIZE);
-pub const NODE_FREE: i32 = 0;
-pub const NODE_WALL: i32 = -1;
-
-pub enum AlgoStatus {
-    InProgress((Vec<Coord>, Vec<Coord>)),
-    Found(Vec<Coord>),
-    NoPath,
-}
-
-pub trait Algorithm {
-    fn tick(&mut self);
-    fn get_data(&self) -> &AlgoStatus;
-}
 
 pub type DPPoint = Point2<f32>;
 
@@ -104,92 +98,15 @@ fn main() {
     }
 }
 
-#[derive(Debug)]
-enum Mode {
-    MapSelection,
-    AlgoSelection,
-    DiagonalSelection,
-    AlgoRunner,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum Algo {
-    AStar,
-    Dijkstra
-}
-
-impl Algo {
-    fn name(&self) -> String {
-        return match self {
-            Algo::AStar => String::from("A*"),
-            Algo::Dijkstra => String::from("Dijkstra")
-        };
-    }
-
-    fn len() -> usize {
-        2
-    }
-
-    fn from_index(idx: usize) -> Algo {
-        return match idx {
-            0 => Algo::AStar,
-            1 => Algo::Dijkstra,
-            _ => panic!("Invalid index: {}", idx),
-        };
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Diagonal {
-    Never,
-    NoWalls,
-    OneWall,
-    Always,
-}
-
-impl Diagonal {
-    fn name(&self) -> String {
-        return match self {
-            Diagonal::Never => String::from("Never"),
-            Diagonal::NoWalls => String::from("No walls"),
-            Diagonal::OneWall => String::from("Only one wall"),
-            Diagonal::Always => String::from("Always"),
-        };
-    }
-
-    fn len() -> usize {
-        4
-    }
-
-    fn from_index(idx: usize) -> Diagonal {
-        return match idx {
-            0 => Diagonal::Never,
-            1 => Diagonal::NoWalls,
-            2 => Diagonal::OneWall,
-            3 => Diagonal::Always,
-            _ => panic!("Invalid index: {}", idx),
-        };
-    }
-
-    fn max_walls(&self) -> usize {
-        match self {
-            Diagonal::Never => 0,
-            Diagonal::NoWalls => 0,
-            Diagonal::OneWall => 1,
-            Diagonal::Always => 2,
-        }
-    }
-}
-
 pub enum SceneParams {
     AlgoSelection { map: Rc<Map> },
     DiagonalSelection { map: Rc<Map>, algo: Algo },
-    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal: Diagonal },
+    HeuristicSelection { map: Rc<Map>, algo: Algo, diagonal: Diagonal },
+    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal: Diagonal, heuristic: Heuristic },
     Empty,
 }
 
 struct GPath {
-    mode: Mode,
     active_scene: Option<Box<RefCell<Scene>>>,
     renderer: Rc<RefCell<Renderer>>,
 }
@@ -205,7 +122,6 @@ trait Scene {
 impl GPath {
     fn new() -> GPath {
         return GPath {
-            mode: MapSelection,
             active_scene: None,
             renderer: Rc::new(RefCell::new(Renderer::new())),
         };
@@ -222,17 +138,18 @@ impl EventHandler for GPath {
                 match params {
                     SceneParams::DiagonalSelection { map, algo } => {
                         self.active_scene = Some(Box::new(RefCell::new(DiagonalPicker::new((map, algo)))));
-                        self.mode = DiagonalSelection;
                     }
                     SceneParams::AlgoSelection { map } => {
                         let picker = AlgoPicker::new(map.clone());
                         self.active_scene = Some(Box::new(RefCell::new(picker)));
-                        self.mode = AlgoSelection;
                     }
-                    SceneParams::AlgoRunner { map, algo, algo_name, diagonal } => {
-                        let executor = Executor::new(map.clone(), algo, algo_name, diagonal.name());
+                    SceneParams::HeuristicSelection {map, algo, diagonal} => {
+                        let picker = HeuristicPicker::new((map, algo, diagonal));
+                        self.active_scene = Some(Box::new(RefCell::new(picker)));
+                    }
+                    SceneParams::AlgoRunner { map, algo, algo_name, diagonal, heuristic } => {
+                        let executor = Executor::new(map.clone(), algo, algo_name, diagonal.name(), heuristic.name());
                         self.active_scene = Some(Box::new(RefCell::new(executor)));
-                        self.mode = AlgoRunner;
                     }
                     _ => panic!("Invalid output from active scene")
                 }
@@ -267,7 +184,6 @@ impl EventHandler for GPath {
                     panic!("Failed to setup map picked");
                 }
                 self.active_scene = Some(Box::new(RefCell::new(picker)));
-                self.mode = MapSelection;
             }
             _ => {
                 if let Some(scene) = &mut self.active_scene {

@@ -1,11 +1,10 @@
-use crate::{Scene, point, GRID_HORZ_COUNT, GRID_VERT_COUNT, SceneParams, Astar, Coord, Algorithm};
+use crate::{Scene, point, SceneParams, Astar, Coord, Algorithm};
 use ggez::{Context, GameError};
 use ggez::event::KeyCode;
 use crate::maps::{Map};
 use crate::renderer::*;
 use crate::Algo;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 pub struct AlgoPicker {
     selected_map: Rc<Map>,

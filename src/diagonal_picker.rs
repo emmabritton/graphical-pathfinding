@@ -6,6 +6,7 @@ use crate::renderer::*;
 use crate::Diagonal;
 use crate::Algo;
 use crate::Astar;
+use crate::heuristic::Heuristic;
 use crate::dijkstra::Dijkstra;
 use crate::map_rendering::draw_map_with_costs_path;
 use std::rc::Rc;
@@ -143,22 +144,10 @@ impl Scene for DiagonalPicker {
         let columns = map_clone.get_column_count() as i32;
         let rows = map_clone.get_row_count() as i32;
         let diagonal = Diagonal::from_index(self.selected.expect("Nothing selected"));
-        let cost_calc = Box::new(move |xy: Coord| {
-            if xy.is_out_of_bounds(columns, rows) {
-                -1
-            } else {
-                map_clone.cost[xy.x as usize][xy.y as usize]
-            }
-        });
-        let algo: Box<Algorithm> = match self.params.1 {
-            Algo::AStar => Box::new(Astar::new_fixed_target(self.params.0.start, self.params.0.targets.clone(), cost_calc, columns, rows, diagonal)),
-            Algo::Dijkstra => Box::new(Dijkstra::new_fixed_target(self.params.0.start, self.params.0.targets.clone(), cost_calc, columns, rows, diagonal))
-        };
-        SceneParams::AlgoRunner {
+        SceneParams::HeuristicSelection {
             map: self.params.0.clone(),
+            algo: self.params.1,
             diagonal,
-            algo: Rc::new(RefCell::new(algo)),
-            algo_name: self.params.1.name(),
         }
     }
 }
