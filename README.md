@@ -9,12 +9,9 @@
 * Map:
   * **Up, Down, Left, Right** to highlight map
   * **Enter/Return** to select
-* Algorithms:
+* Algorithms, diagonals and heuristics:
   * **Up, Down** to highlight algorithm
   * **Enter/Return** to select
-* Diagonal mode:
-  * **Up, Down** to highlight mode
-  * **Enter/Return** to select  
 * Runner:
   * **[** faster
   * **]** slower
