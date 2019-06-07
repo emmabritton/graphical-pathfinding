@@ -10,7 +10,7 @@ use crate::max;
 use ggez::{Context, GameError, timer};
 use ggez::event::KeyCode;
 use std::cell::RefCell;
-use crate::{point, CELL_SIZE, GRID_VERT_COUNT, GRID_HORZ_COUNT, GRID_START, SCREEN_WIDTH, SCREEN_HEIGHT};
+use crate::{point, CELL_SIZE, GRID_START, SCREEN_WIDTH, SCREEN_HEIGHT};
 use ggez::graphics::{Text, TextFragment, Color, Scale, MeshBuilder, DrawMode, Rect};
 use crate::map_rendering::{draw_map_with_costs_nodes, draw_map_with_costs_path, draw_map_with_costs};
 
@@ -18,6 +18,7 @@ pub struct Executor {
     map: Rc<Map>,
     algo: Rc<RefCell<Box<Algorithm>>>,
     diagonal_mode: String,
+    heuristic_mode: String,
     auto_advance: bool,
     advance: bool,
     update_speed: f64,
@@ -27,11 +28,12 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal_mode: String) -> Executor {
+    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal_mode: String, heuristic_mode: String) -> Executor {
         Executor {
             map,
             algo,
             diagonal_mode,
+            heuristic_mode,
             auto_advance: true,
             advance: false,
             update_speed: 0.2,
@@ -55,7 +57,7 @@ impl Executor {
             AlgoStatus::Found(path) => format!("Found: {} ticks, Path: {} tiles", self.ticks, path.len()),
             AlgoStatus::NoPath => format!("Failed after {} ticks", self.ticks)
         };
-        let display = format!("Map: {}  Algo: {}  Diagonals: {}  |  {}", self.map.idx, self.algo_name, self.diagonal_mode, step_text);
+        let display = format!("M: {}  A: {}  D: {}  H: {}  |  {}", self.map.idx, self.algo_name, self.diagonal_mode, self.heuristic_mode, step_text);
         renderer.draw_white_text(ctx, display, point(8., 4.), 48., false);
     }
 }
