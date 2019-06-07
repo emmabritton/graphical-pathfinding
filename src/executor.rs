@@ -57,7 +57,7 @@ impl Executor {
             AlgoStatus::Found(path) => format!("Found: {} ticks, Path: {} tiles", self.ticks, path.len()),
             AlgoStatus::NoPath => format!("Failed after {} ticks", self.ticks)
         };
-        let display = format!("M: {}  A: {}  D: {}  H: {}  |  {}", self.map.idx, self.algo_name, self.diagonal_mode, self.heuristic_mode, step_text);
+        let display = format!("Map: {}  Algo: {}  Diag: {}  Heur: {}  |  {}", self.map.idx, self.algo_name, self.diagonal_mode, self.heuristic_mode, step_text);
         renderer.draw_white_text(ctx, display, point(8., 4.), 48., false);
     }
 }
