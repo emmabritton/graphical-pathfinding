@@ -4,35 +4,44 @@ use crate::maps::node_cost_to_percentage;
 
 //PUBLIC
 
+pub fn draw_map_with_costs_start_end(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, map: &Map, variant: usize) -> GameResult<()> {
+    let cols = map.get_column_count();
+    let rows = map.get_row_count();
+    draw_map_grid(ctx, renderer, map_offset, cell_size, cols, rows)?;
+    draw_map_costs(ctx, renderer, map_offset, cell_size, cols, rows, map)?;
+    draw_map_start_end(ctx, renderer, map_offset, cell_size, map.variants[variant].start, &map.variants[variant].ends)?;
+
+    Ok(())
+}
+
 pub fn draw_map_with_costs(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, map: &Map) -> GameResult<()> {
     let cols = map.get_column_count();
     let rows = map.get_row_count();
     draw_map_grid(ctx, renderer, map_offset, cell_size, cols, rows)?;
     draw_map_costs(ctx, renderer, map_offset, cell_size, cols, rows, map)?;
-    draw_map_start_end(ctx, renderer, map_offset, cell_size, map.start, &map.targets)?;
 
     Ok(())
 }
 
-pub fn draw_map_with_costs_nodes(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, map: &Map, open_nodes: &Vec<Coord>, closed_nodes: &Vec<Coord>) -> GameResult<()> {
+pub fn draw_map_with_costs_nodes(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, map: &Map, open_nodes: &Vec<Coord>, closed_nodes: &Vec<Coord>, variant: usize) -> GameResult<()> {
     let cols = map.get_column_count();
     let rows = map.get_row_count();
     draw_map_grid(ctx, renderer, map_offset, cell_size, cols, rows)?;
     draw_map_costs(ctx, renderer, map_offset, cell_size, cols, rows, map)?;
     draw_map_nodes(ctx, renderer, map_offset, cell_size, open_nodes, closed_nodes)?;
-    draw_map_start_end(ctx, renderer, map_offset, cell_size, map.start, &map.targets)?;
+    draw_map_start_end(ctx, renderer, map_offset, cell_size, map.variants[variant].start, &map.variants[variant].ends)?;
 //    draw_debug_node_numbers(ctx, renderer, map_offset, cell_size, cols, rows)?;
 
     Ok(())
 }
 
-pub fn draw_map_with_costs_path(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, map: &Map, path: &Vec<Coord>) -> GameResult<()> {
+pub fn draw_map_with_costs_path(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, map: &Map, path: &Vec<Coord>, variant: usize) -> GameResult<()> {
     let cols = map.get_column_count();
     let rows = map.get_row_count();
     draw_map_grid(ctx, renderer, map_offset, cell_size, cols, rows)?;
     draw_map_costs(ctx, renderer, map_offset, cell_size, cols, rows, map)?;
     draw_map_path(ctx, renderer, map_offset, cell_size, path)?;
-    draw_map_start_end(ctx, renderer, map_offset, cell_size, map.start, &map.targets)?;
+    draw_map_start_end(ctx, renderer, map_offset, cell_size, map.variants[variant].start, &map.variants[variant].ends)?;
 
     Ok(())
 }
