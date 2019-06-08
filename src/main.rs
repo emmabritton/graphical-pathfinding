@@ -84,7 +84,7 @@ fn main() {
         .build()
         .expect("Could not create ggez context!");
 
-    let mut my_game = GPath::new();
+    let mut my_game = GraphicalPath::new();
 
     let mut picker = MapPicker::new();
     if picker.setup(ctx, &mut my_game.renderer.borrow_mut()).is_err() {
@@ -106,7 +106,7 @@ pub enum SceneParams {
     Empty,
 }
 
-struct GPath {
+struct GraphicalPath {
     active_scene: Option<Box<RefCell<Scene>>>,
     renderer: Rc<RefCell<Renderer>>,
 }
@@ -119,16 +119,16 @@ trait Scene {
     fn get_next_stage_params(&self) -> SceneParams;
 }
 
-impl GPath {
-    fn new() -> GPath {
-        return GPath {
+impl GraphicalPath {
+    fn new() -> GraphicalPath {
+        return GraphicalPath {
             active_scene: None,
             renderer: Rc::new(RefCell::new(Renderer::new())),
         };
     }
 }
 
-impl EventHandler for GPath {
+impl EventHandler for GraphicalPath {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         if let Some(scene) = &mut self.active_scene {
             scene.borrow_mut().update(ctx)?;
@@ -196,7 +196,7 @@ impl EventHandler for GPath {
     }
 }
 
-impl GPath {
+impl GraphicalPath {
     fn draw_fps(&mut self, ctx: &mut Context) {
         let text = Text::new(TextFragment {
             text: format!("{:.0}", timer::fps(ctx)),
