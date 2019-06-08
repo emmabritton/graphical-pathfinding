@@ -73,17 +73,17 @@ impl MapPicker {
     }
 
     fn draw_maps(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-        //Layout for diff screen res
-        //4096: Grid width: 512   Spacing: 234    Offset: 300  |  16
-        //3840: Grid width: 512   Spacing: 200    Offset: 240  |  16
-        //2560: Grid width: 448   Spacing: 50     Offset: 60   |  14
-        //1920: Grid width: 320   Spacing: 50     Offset: 60   |  10
-        //1600: Grid width: 256   Spacing: 50     Offset: 60   |   8
-        //1400: Grid width: 256   Spacing: 20     Offset: 20   |   8
-        //1366: Grid width: 256   Spacing: 12     Offset: 18   |   8
-        //1280: Grid width: 224   Spacing: 25     Offset: 30   |   7
-        //1024: Grid width: 192   Spacing: 10     Offset: 12   |   6
-        // 800: Grid width: 128   Spacing: 25     Offset: 30   |   4
+        //Layout for diff screen widths
+        //4096:  Grid width: 512  Spacing: 234  Offset: 300  Cell size: 16
+        //3840:  Grid width: 512  Spacing: 200  Offset: 240  Cell size: 16
+        //2560:  Grid width: 448  Spacing: 50   Offset: 60   Cell size: 14
+        //1920:  Grid width: 320  Spacing: 50   Offset: 60   Cell size: 10
+        //1600:  Grid width: 256  Spacing: 50   Offset: 60   Cell size:  8
+        //1400:  Grid width: 256  Spacing: 20   Offset: 20   Cell size:  8
+        //1366:  Grid width: 256  Spacing: 12   Offset: 18   Cell size:  8
+        //1280:  Grid width: 224  Spacing: 25   Offset: 30   Cell size:  7
+        //1024:  Grid width: 192  Spacing: 10   Offset: 12   Cell size:  6
+        // 800:  Grid width: 128  Spacing: 25   Offset: 30   Cell size:  4
         let screen_size = renderer.get_screen_size(ctx);
         let cell_size = MapPicker::get_cell_size_for_screen_width(screen_size.0);
         let grid_spacing = (MapPicker::get_spacing_for_screen_width(screen_size.0), 100.);
@@ -97,7 +97,6 @@ impl MapPicker {
                 let map_idx = x + y * 5;
 
                 draw_map_with_costs(ctx, renderer, (grid_x, grid_y), cell_size, &self.maps[map_idx])?;
-
             }
         }
         Ok(())
@@ -128,8 +127,6 @@ impl Scene for MapPicker {
         let grid_x = x as f32 * (grid_size.0 + grid_spacing.0) + grid_offset.0;
         let grid_y = y as f32 * (grid_size.1 + grid_spacing.1) + grid_offset.1;
         renderer.draw_coloured_mesh(ctx, highlight_mesh.as_ref(), point(grid_x - 2., grid_y - 2.), (0., 1., 1., 1.).into());
-
-        renderer.draw_white_text(ctx, self.maps[self.highlighted].info.clone(), point(grid_offset.0, 900.), 48., false);
 
         renderer.draw_white_text(ctx, String::from("Choose a map"), point(screen_size.0 / 2., 200.), 48., true);
 

@@ -44,12 +44,8 @@ use crate::heuristic_picker::HeuristicPicker;
 
 pub const SCREEN_WIDTH: f32 = 1920.;
 pub const SCREEN_HEIGHT: f32 = 1080.;
-pub const GRID_WIDTH: f32 = 1920.;
-pub const GRID_HEIGHT: f32 = 1020.;
-pub const CELL_SIZE: f32 = 60.;
 pub const GRID_VERT_COUNT: usize = 17;
 pub const GRID_HORZ_COUNT: usize = 32;
-pub const GRID_START: (f32, f32) = (0., CELL_SIZE);
 
 pub type DPPoint = Point2<f32>;
 
@@ -144,7 +140,7 @@ impl EventHandler for GraphicalPath {
                         self.active_scene = Some(Box::new(RefCell::new(picker)));
                     }
                     SceneParams::HeuristicSelection {map, algo, diagonal} => {
-                        let picker = HeuristicPicker::new((map, algo, diagonal));
+                        let picker = HeuristicPicker::new((map, algo, diagonal, 0));
                         self.active_scene = Some(Box::new(RefCell::new(picker)));
                     }
                     SceneParams::AlgoRunner { map, algo, algo_name, diagonal, heuristic } => {

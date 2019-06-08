@@ -1,7 +1,7 @@
 use crate::{Scene, SceneParams, Coord, point, DPPoint};
 use ggez::{Context, GameError, GameResult};
 use ggez::event::KeyCode;
-use crate::maps::Map;
+use crate::maps::{Map, Variant};
 use crate::renderer::*;
 use crate::Diagonal;
 use crate::Algo;
@@ -84,7 +84,7 @@ impl Scene for DiagonalPicker {
         renderer.draw_mesh(ctx, list_mesh.as_ref(), point(text_offset.x - 50., text_offset.y + 8. + (self.highlighted as f32 * text_spacing)));
 
         for i in 0..self.diagonal_maps.len() {
-            draw_map_with_costs_path(ctx, renderer, (grid_offset.x + (grid_spacing * i as f32 + grid_width * i as f32), grid_offset.y), 40., &self.diagonal_maps[i].0, &self.diagonal_maps[i].1)?;
+            draw_map_with_costs_path(ctx, renderer, (grid_offset.x + (grid_spacing * i as f32 + grid_width * i as f32), grid_offset.y), 40., &self.diagonal_maps[i].0, &self.diagonal_maps[i].1, 0)?;
         }
 
         match Diagonal::from_index(self.highlighted) {

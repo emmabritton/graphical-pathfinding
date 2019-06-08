@@ -14,11 +14,8 @@ pub struct Variant {
 }
 
 pub struct Map {
-    pub idx: usize,
-    pub start: Coord,
-    pub targets: Vec<Coord>,
+    pub variants: Vec<Variant>,
     pub cost: Vec<Vec<i32>>,
-    pub info: String,
 }
 
 impl Map {
@@ -40,64 +37,83 @@ pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
     if let Ok(mut file) = filesystem::open(ctx, format!("/map{}", which)) {
         let mut buffer = String::new();
         match file.read_to_string(&mut buffer) {
-            Ok(result) => {
-                if (result + 1) < GRID_VERT_COUNT * GRID_HORZ_COUNT {
-                    println!("length: {}, required: {} (newlines are ignored)", result, GRID_VERT_COUNT * GRID_HORZ_COUNT);
-                    panic!("Map {} is too small", which);
-                }
+            Ok(_) => {
+                let lines: Vec<&str> = buffer.split_whitespace().collect();
 
-                let mut start = Coord { x: -1, y: -1 };
-                let mut targets = vec![];
                 let mut cost = vec![vec![0; GRID_VERT_COUNT]; GRID_HORZ_COUNT];
 
                 let mut x = 0_usize;
                 let mut y = 0_usize;
 
+                let mut variants = vec![];
 
-                let (map_chars, info_chars) = buffer.split_at(GRID_VERT_COUNT * (GRID_HORZ_COUNT + 1));
-                let chars = map_chars.chars();
-                for letter in chars {
-                    match letter {
-                        's' => {
-                            if start.x == -1 {
-                                start = Coord { x: x as i32, y: y as i32 }
-                            } else {
-                                panic!("More than one start found in map {}", which);
+                lines.iter().for_each(|&line| {
+                    let mut chars = line.chars();
+                    match chars.next().unwrap() {
+                        'M' => {
+                            for letter in chars {
+                                match letter {
+                                    '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' => cost[x][y] = letter.to_digit(10).unwrap() as i32,
+                                    '9' => cost[x][y] = NODE_WALL,
+                                    '0' | '\n' => { /* ignored */ }
+                                    _ => panic!("Unexpected character {} found at {},{} in map {}", letter, x, y, which)
+                                }
+                                if letter != '\n' {
+                                    x += 1;
+                                }
+                                if x >= GRID_HORZ_COUNT {
+                                    x = 0;
+                                    y += 1;
+                                }
+                                if y > GRID_VERT_COUNT {
+                                    break;
+                                }
                             }
                         }
-                        't' => targets.push(Coord { x: x as i32, y: y as i32 }),
-                        '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' => cost[x][y] = letter.to_digit(10).unwrap() as i32,
-                        '9' => cost[x][y] = -1,
+                        'S' => {
+                            variants.push(Variant { start: convert_chars_to_coords(chars), ends: vec![] });
+                        }
+                        'E' => {
+                            if let Some(variant) = variants.last_mut() {
+                                variant.ends.push(convert_chars_to_coords(chars));
+                            } else {
+                                panic!("End without start in map {}", which);
+                            }
+                        }
                         _ => {}
                     }
-                    if letter != '\n' {
-                        x += 1;
-                    }
-                    if x >= GRID_HORZ_COUNT {
-                        x = 0;
-                        y += 1;
-                    }
-                    if y > GRID_VERT_COUNT {
-                        break;
-                    }
+                });
+
+                if y < GRID_VERT_COUNT {
+                    panic!("map {} is too short", which);
                 }
 
-                let info = info_chars.to_string();
-
-                if start.x < 0 || start.y < 0 {
-                    panic!("No start found in map {}", which);
+                if variants.is_empty() {
+                    panic!("map {} has no variants", which);
                 }
 
-                if targets.is_empty() {
-                    panic!("No targets found in map {}", which);
-                }
+                variants.iter().for_each(|variant| {
+                    if variant.ends.is_empty() {
+                        panic!("variant in {} has no end", which);
+                    } else {
+                        variant.ends.iter().for_each(|end| {
+                            if cost[end.x as usize][end.y as usize] == NODE_WALL {
+                                panic!("map {} has end in a wall at {},{}", which, end.x, end.y)
+                            }
+                        });
+                    }
+                    if variant.start.x as usize > GRID_HORZ_COUNT || variant.start.y as usize > GRID_HORZ_COUNT {
+                        panic!("variant in {} has start outside bounds", which);
+                    } else {
+                        if cost[variant.start.x as usize][variant.start.y as usize] == NODE_WALL {
+                            panic!("map {} has start in a wall at {},{}", which, variant.start.x, variant.start.y)
+                        }
+                    }
+                });
 
                 return Map {
-                    idx: which,
-                    start,
-                    targets,
+                    variants,
                     cost,
-                    info,
                 };
             }
             Err(err) => {
@@ -108,4 +124,15 @@ pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
     } else {
         panic!("Map {} missing", which);
     }
+}
+
+fn convert_chars_to_coords(chars: Chars) -> Coord {
+    let char_array = chars.collect::<Vec<char>>();
+    let text = char_array.iter().collect::<String>();
+    let mut split = text.split(",");
+    let x = split.next();
+    let y = split.next();
+    let x = x.expect("Invalid coord").parse().expect("Coord not a num");
+    let y = y.expect("Invalid coord").parse().expect("Coord not a num");
+    return Coord::new(x, y);
 }
