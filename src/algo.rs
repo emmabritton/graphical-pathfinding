@@ -1,8 +1,5 @@
 use crate::Coord;
 
-pub const NODE_FREE: i32 = 0;
-pub const NODE_WALL: i32 = -1;
-
 pub type CostCalc = Fn(Coord) -> i32;
 
 pub enum AlgoStatus {

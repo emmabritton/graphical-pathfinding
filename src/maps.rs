@@ -2,6 +2,16 @@ use crate::models::Coord;
 use ggez::{Context, filesystem};
 use std::io::Read;
 use crate::{GRID_VERT_COUNT, GRID_HORZ_COUNT};
+use std::str::Chars;
+
+#[allow(dead_code)]
+pub const NODE_FREE: i32 = 0;
+pub const NODE_WALL: i32 = -1;
+
+pub struct Variant {
+    pub start: Coord,
+    pub ends: Vec<Coord>,
+}
 
 pub struct Map {
     pub idx: usize,
