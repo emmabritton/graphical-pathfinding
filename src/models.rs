@@ -4,7 +4,7 @@ use std::fmt::{Display, Formatter};
 use std::fmt;
 use std::rc::Rc;
 
-#[derive(Debug, Default, Ord, Eq, PartialOrd, Clone, Copy)]
+#[derive(Debug, Default, Eq, Clone, Copy)]
 pub struct Coord {
     pub x: i32,
     pub y: i32,
@@ -50,13 +50,13 @@ impl Into<(i32, i32)> for Coord {
 
 impl Into<Coord> for (i32, i32) {
     fn into(self) -> Coord {
-        Coord { x: self.0, y: self.1 }
+        Coord::new(self.0, self.1)
     }
 }
 
 impl Into<Coord> for (u32, u32) {
     fn into(self) -> Coord {
-        Coord { x: self.0 as i32, y: self.1 as i32 }
+        Coord::new(self.0 as i32, self.1 as i32)
     }
 }
 
@@ -64,10 +64,7 @@ impl Add<(i32, i32)> for Coord {
     type Output = Coord;
 
     fn add(self, rhs: (i32, i32)) -> Self::Output {
-        Coord {
-            x: self.x + rhs.0,
-            y: self.y + rhs.1,
-        }
+        Coord::new(self.x + rhs.0, self.y + rhs.1)
     }
 }
 
@@ -75,10 +72,7 @@ impl Add<Coord> for Coord {
     type Output = Coord;
 
     fn add(self, rhs: Coord) -> Self::Output {
-        Coord {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
+        Coord::new(self.x + rhs.x, self.y + rhs.y)
     }
 }
 
@@ -86,10 +80,7 @@ impl Sub for Coord {
     type Output = Coord;
 
     fn sub(self, rhs: Coord) -> Self::Output {
-        Coord {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-        }
+        Coord::new(self.x - rhs.x, self.y - rhs.y)
     }
 }
 
