@@ -95,10 +95,10 @@ fn main() {
 }
 
 pub enum SceneParams {
-    AlgoSelection { map: Rc<Map> },
-    DiagonalSelection { map: Rc<Map>, algo: Algo },
-    HeuristicSelection { map: Rc<Map>, algo: Algo, diagonal: Diagonal },
-    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal: Diagonal, heuristic: Heuristic },
+    AlgoSelection { map: Rc<Map>, variant: usize },
+    DiagonalSelection { map: Rc<Map>, algo: Algo, variant: usize },
+    HeuristicSelection { map: Rc<Map>, algo: Algo, diagonal: Diagonal, variant: usize },
+    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal: Diagonal, heuristic: Heuristic, variant: usize },
     Empty,
 }
 
@@ -110,7 +110,8 @@ struct GraphicalPath {
 trait Scene {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()>;
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> GameResult<()>;
-    fn on_button_press(&mut self, keycode: KeyCode);
+    fn on_button_down(&mut self, keycode: KeyCode);
+    fn on_button_up(&mut self, keycode: KeyCode);
     fn is_complete(&self) -> bool;
     fn get_next_stage_params(&self) -> SceneParams;
 }
@@ -132,19 +133,19 @@ impl EventHandler for GraphicalPath {
             if scene.borrow_mut().is_complete() {
                 let params = scene.borrow_mut().get_next_stage_params();
                 match params {
-                    SceneParams::DiagonalSelection { map, algo } => {
-                        self.active_scene = Some(Box::new(RefCell::new(DiagonalPicker::new((map, algo)))));
+                    SceneParams::DiagonalSelection { map, algo, variant } => {
+                        self.active_scene = Some(Box::new(RefCell::new(DiagonalPicker::new(map, algo, variant))));
                     }
-                    SceneParams::AlgoSelection { map } => {
-                        let picker = AlgoPicker::new(map.clone());
+                    SceneParams::AlgoSelection { map, variant } => {
+                        let picker = AlgoPicker::new(map.clone(), variant);
                         self.active_scene = Some(Box::new(RefCell::new(picker)));
                     }
-                    SceneParams::HeuristicSelection {map, algo, diagonal} => {
-                        let picker = HeuristicPicker::new((map, algo, diagonal, 0));
+                    SceneParams::HeuristicSelection { map, algo, diagonal, variant } => {
+                        let picker = HeuristicPicker::new(map, algo, diagonal, variant);
                         self.active_scene = Some(Box::new(RefCell::new(picker)));
                     }
-                    SceneParams::AlgoRunner { map, algo, algo_name, diagonal, heuristic } => {
-                        let executor = Executor::new(map.clone(), algo, algo_name, diagonal.name(), heuristic.name());
+                    SceneParams::AlgoRunner { map, algo, algo_name, diagonal, heuristic, variant } => {
+                        let executor = Executor::new(map.clone(), algo, algo_name, diagonal.name(), heuristic.name(), variant);
                         self.active_scene = Some(Box::new(RefCell::new(executor)));
                     }
                     _ => panic!("Invalid output from active scene")
@@ -181,14 +182,20 @@ impl EventHandler for GraphicalPath {
             }
             _ => {
                 if let Some(scene) = &mut self.active_scene {
-                    scene.borrow_mut().on_button_press(keycode);
+                    scene.borrow_mut().on_button_down(keycode);
                 }
             }
         }
     }
 
-    fn key_up_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
-
+    fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
+        match keycode {
+            _ => {
+                if let Some(scene) = &mut self.active_scene {
+                    scene.borrow_mut().on_button_up(keycode);
+                }
+            }
+        }
     }
 }
 

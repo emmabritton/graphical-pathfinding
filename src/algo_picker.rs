@@ -1,23 +1,28 @@
 use crate::{Scene, point, SceneParams};
 use ggez::{Context, GameError};
 use ggez::event::KeyCode;
-use crate::maps::{Map};
+use crate::maps::Map;
 use crate::renderer::*;
 use crate::Algo;
 use std::rc::Rc;
 
+struct AlgoParams {
+    map: Rc<Map>,
+    variant: usize,
+}
+
 pub struct AlgoPicker {
-    selected_map: Rc<Map>,
+    params: AlgoParams,
     selected: Option<usize>,
-    highlighted: usize
+    highlighted: usize,
 }
 
 impl AlgoPicker {
-    pub fn new(map: Rc<Map>) -> AlgoPicker {
+    pub fn new(map: Rc<Map>, variant: usize) -> AlgoPicker {
         AlgoPicker {
-            selected_map: map,
+            params: AlgoParams { map, variant },
             selected: None,
-            highlighted: 0
+            highlighted: 0,
         }
     }
 }
@@ -44,18 +49,15 @@ impl Scene for AlgoPicker {
         Ok(())
     }
 
-    fn on_button_press(&mut self, keycode: KeyCode) {
+    fn on_button_down(&mut self, keycode: KeyCode) {
         match keycode {
-            KeyCode::Up => {
-                if self.highlighted > 0 {
-                    self.highlighted -= 1;
-                }
-            }
-            KeyCode::Down => {
-                if self.highlighted < Algo::len() - 1 {
-                    self.highlighted += 1;
-                }
-            }
+            KeyCode::Return => self.selected = Some(self.highlighted),
+            _ => {}
+        }
+    }
+
+    fn on_button_up(&mut self, keycode: KeyCode) {
+        match keycode {
             KeyCode::Return => self.selected = Some(self.highlighted),
             _ => {}
         }
@@ -67,8 +69,9 @@ impl Scene for AlgoPicker {
 
     fn get_next_stage_params(&self) -> SceneParams {
         SceneParams::DiagonalSelection {
-            map: self.selected_map.clone(),
-            algo: Algo::from_index(self.selected.expect("Nothing selected"))
+            map: self.params.map.clone(),
+            variant: self.params.variant,
+            algo: Algo::from_index(self.selected.expect("Nothing selected")),
         }
     }
 }
