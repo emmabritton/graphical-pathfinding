@@ -51,7 +51,16 @@ impl Scene for AlgoPicker {
 
     fn on_button_down(&mut self, keycode: KeyCode) {
         match keycode {
-            KeyCode::Return => self.selected = Some(self.highlighted),
+            KeyCode::Up => {
+                if self.highlighted > 0 {
+                    self.highlighted -= 1;
+                }
+            }
+            KeyCode::Down => {
+                if self.highlighted < Algo::len() - 1 {
+                    self.highlighted += 1;
+                }
+            }
             _ => {}
         }
     }
