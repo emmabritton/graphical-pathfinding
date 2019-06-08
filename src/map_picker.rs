@@ -1,19 +1,16 @@
-use crate::{Scene, point, GRID_HORZ_COUNT, GRID_VERT_COUNT, SCREEN_WIDTH, SCREEN_HEIGHT, SceneParams};
+use crate::{Scene, point, GRID_HORZ_COUNT, GRID_VERT_COUNT, SceneParams};
 use ggez::{Context, GameError};
 use ggez::event::KeyCode;
 use crate::maps::{Map, read_map_file};
 use crate::renderer::*;
 use std::rc::Rc;
-use crate::map_rendering::draw_map_with_costs;
-use ggez::mint::Vector2;
-use ggez::graphics;
-use ggez::graphics::{Canvas, Image, DrawParam};
+use crate::map_rendering::{draw_map_with_costs, draw_map_with_costs_start_end};
 
 pub struct MapPicker {
     maps: Vec<Rc<Map>>,
     selected: Option<usize>,
     highlighted: usize,
-    map_image: Option<Image>,
+    variant_highlighted: usize,
 }
 
 impl MapPicker {
@@ -22,84 +19,38 @@ impl MapPicker {
             maps: vec![],
             selected: None,
             highlighted: 0,
-            map_image: None
+            variant_highlighted: 0,
         }
     }
 }
 
 impl MapPicker {
-    pub fn setup(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
+    pub fn setup(&mut self, ctx: &mut Context, _renderer: &mut Renderer) -> Result<(), GameError> {
         for i in 0..10 {
             self.maps.push(Rc::new(read_map_file(ctx, i)));
         }
-        let canvas = Canvas::with_window_size(ctx)?;
-        graphics::set_canvas(ctx, Some(&canvas));
-
-        let test_mesh = renderer.make_square_mesh(ctx, 10., true, 0.)?;
-        renderer.draw_mesh(ctx, test_mesh.as_ref(), point(0.,0.));
-        renderer.draw_mesh(ctx, test_mesh.as_ref(), point(SCREEN_WIDTH - 10.,SCREEN_HEIGHT - 10.));
-
-        self.draw_maps(ctx, renderer)?;
-
-        self.map_image = Some(canvas.into_inner());
-        graphics::set_canvas(ctx, None);
 
         Ok(())
     }
 
-    fn get_cell_size_for_screen_width(width: f32) -> f32 {
-        match width {
-           res if res >= 3840. => return 16.,
-           res if res >= 2560. => return 14.,
-           res if res >= 1920. => return 10.,
-           res if res >= 1366. => return 8.,
-           res if res >= 1280. => return 7.,
-           res if res >= 1024. => return 6.,
-            _ => return 4.
-        }
-    }
-
-    fn get_spacing_for_screen_width(width: f32) -> f32 {
-        match width {
-            res if res >= 4096. => return 234.,
-            res if res >= 3840. => return 200.,
-            res if res >= 1600. => return 50.,
-            res if res >= 1400. => return 20.,
-            res if res >= 1366. => return 12.,
-            res if res >= 1280. => return 25.,
-            res if res >= 1024. => return 10.,
-            _ => return 25.
-        }
-    }
-
-    fn draw_maps(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-        //Layout for diff screen widths
-        //4096:  Grid width: 512  Spacing: 234  Offset: 300  Cell size: 16
-        //3840:  Grid width: 512  Spacing: 200  Offset: 240  Cell size: 16
-        //2560:  Grid width: 448  Spacing: 50   Offset: 60   Cell size: 14
-        //1920:  Grid width: 320  Spacing: 50   Offset: 60   Cell size: 10
-        //1600:  Grid width: 256  Spacing: 50   Offset: 60   Cell size:  8
-        //1400:  Grid width: 256  Spacing: 20   Offset: 20   Cell size:  8
-        //1366:  Grid width: 256  Spacing: 12   Offset: 18   Cell size:  8
-        //1280:  Grid width: 224  Spacing: 25   Offset: 30   Cell size:  7
-        //1024:  Grid width: 192  Spacing: 10   Offset: 12   Cell size:  6
-        // 800:  Grid width: 128  Spacing: 25   Offset: 30   Cell size:  4
-        let screen_size = renderer.get_screen_size(ctx);
-        let cell_size = MapPicker::get_cell_size_for_screen_width(screen_size.0);
-        let grid_spacing = (MapPicker::get_spacing_for_screen_width(screen_size.0), 100.);
-        let remaining = screen_size.0 - ((cell_size * GRID_HORZ_COUNT as f32 * 5.) + (grid_spacing.0 * 4.));
-        let grid_offset = (remaining / 2., 400.);
-        let grid_size = (cell_size * GRID_HORZ_COUNT as f32, cell_size * GRID_VERT_COUNT as f32);
-        for x in 0..5 {
-            for y in 0..2 {
-                let grid_x = x as f32 * (grid_size.0 + grid_spacing.0) + grid_offset.0;
-                let grid_y = y as f32 * (grid_size.1 + grid_spacing.1) + grid_offset.1;
-                let map_idx = x + y * 5;
-
-                draw_map_with_costs(ctx, renderer, (grid_x, grid_y), cell_size, &self.maps[map_idx])?;
-            }
-        }
-        Ok(())
+    fn get_cell_size_for_screen(size: (f32, f32)) -> f32 {
+        let cell_w = match size.0 {
+            res if res >= 3840. => 24.,
+            res if res >= 2560. => 16.,
+            res if res >= 1920. => 12.,
+            res if res >= 1600. => 10.,
+            res if res >= 1280. => 8.,
+            res if res >= 1024. => 6.,
+            _ => return 5.
+        };
+        let cell_h = match size.1 {
+            res if res >= 2160. => 25.,
+            res if res >= 1440. => 16.,
+            res if res >= 1080. => 12.,
+            res if res >= 768. => 9.,
+            _ => return 7.
+        };
+        return if cell_w < cell_h { cell_w } else { cell_h };
     }
 }
 
@@ -110,54 +61,99 @@ impl Scene for MapPicker {
 
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
         let screen_size = renderer.get_screen_size(ctx);
-        let cell_size = MapPicker::get_cell_size_for_screen_width(screen_size.0);
-        let grid_spacing = (MapPicker::get_spacing_for_screen_width(screen_size.0), 100.);
-        let remaining = screen_size.0 - ((cell_size * GRID_HORZ_COUNT as f32 * 5.) + (grid_spacing.0 * 4.));
-        let grid_offset = (remaining / 2., 400.);
+        let cell_size = MapPicker::get_cell_size_for_screen(screen_size);
         let grid_size = (cell_size * GRID_HORZ_COUNT as f32, cell_size * GRID_VERT_COUNT as f32);
+        let grid_spacing = screen_size.1 * 0.05;
+        let indicator_size = 30.;
+        let indicator_spacing = 30.;
+        let variant_spacing = (screen_size.0 - (grid_size.0 * 4.) - (indicator_spacing * 2.) - indicator_size) * 0.3;
+
+        let grid_offset = (grid_spacing, (screen_size.1 * 0.5) - (grid_size.1 * 0.5));
+        let indicator_pos = (grid_spacing + grid_size.0 + indicator_spacing, (screen_size.1 * 0.5) - (indicator_size * 0.5));
+        let variant_offset = (indicator_pos.0 + indicator_size + indicator_spacing + grid_size.0 * 0.5 + variant_spacing, (screen_size.1 * 0.5) - (grid_size.1 * 0.5));
+
+        if self.variant_highlighted > 0 {
+            draw_map_with_costs_start_end(ctx, renderer, (variant_offset.0 - grid_size.0 - variant_spacing, variant_offset.1), cell_size, self.maps[self.highlighted].as_ref(), self.variant_highlighted - 1)?;
+        }
+
+        draw_map_with_costs_start_end(ctx, renderer, variant_offset, cell_size, self.maps[self.highlighted].as_ref(), self.variant_highlighted)?;
+
+        if self.variant_highlighted < (self.maps[self.highlighted].variants.len() - 1) {
+            draw_map_with_costs_start_end(ctx, renderer, (variant_offset.0 + grid_size.0 + variant_spacing, variant_offset.1), cell_size, self.maps[self.highlighted].as_ref(), self.variant_highlighted + 1)?;
+            if self.variant_highlighted < (self.maps[self.highlighted].variants.len() - 2) {
+                draw_map_with_costs_start_end(ctx, renderer, (variant_offset.0 + (grid_size.0 + variant_spacing) * 2., variant_offset.1), cell_size, self.maps[self.highlighted].as_ref(), self.variant_highlighted + 2)?;
+            }
+        }
+
+        let grid_background = renderer.make_rect_mesh(ctx, indicator_pos.0 + indicator_spacing * 2., screen_size.1, true, 0.)?;
+        renderer.draw_coloured_mesh(ctx, grid_background.as_ref(), point(0., 0.), (0, 0, 0, 255).into());
+
+        if self.highlighted > 0 {
+            draw_map_with_costs(ctx, renderer, (grid_offset.0, grid_offset.1 - grid_spacing - grid_size.1), cell_size, self.maps[self.highlighted - 1].as_ref())?;
+            if self.highlighted > 1 {
+                draw_map_with_costs(ctx, renderer, (grid_offset.0, grid_offset.1 - ((grid_spacing + grid_size.1) * 2.)), cell_size, self.maps[self.highlighted - 2].as_ref())?;
+            }
+        }
+
+        draw_map_with_costs(ctx, renderer, grid_offset, cell_size, self.maps[self.highlighted].as_ref())?;
+
+        if self.highlighted < (self.maps.len() - 1) {
+            draw_map_with_costs(ctx, renderer, (grid_offset.0, grid_offset.1 + grid_spacing + grid_size.1), cell_size, self.maps[self.highlighted + 1].as_ref())?;
+            if self.highlighted < (self.maps.len() - 2) {
+                draw_map_with_costs(ctx, renderer, (grid_offset.0, grid_offset.1 + (grid_spacing + grid_size.1) * 2.), cell_size, self.maps[self.highlighted + 2].as_ref())?;
+            }
+        }
+
         let highlight_mesh = renderer.make_rect_mesh(ctx, grid_size.0 + 8., grid_size.1 + 8., false, 6.)?;
+        renderer.draw_coloured_mesh(ctx, highlight_mesh.as_ref(), point(variant_offset.0 - 4., variant_offset.1 - 4.), (0., 1., 1., 1.).into());
 
-        let params = DrawParam::new()
-            .dest(point(0.,screen_size.1))
-            .scale(Vector2 {x: 1., y: -1.}); //Images are drawn upside down due to ggez bug #304
-        graphics::draw(ctx, self.map_image.as_ref().unwrap(), params)?;
+        let indicator = renderer.make_list_indicator_mesh(ctx, indicator_size)?;
+        renderer.draw_mesh(ctx, indicator.as_ref(), point(indicator_pos.0, indicator_pos.1));
 
-        let x = self.highlighted % 5;
-        let y = self.highlighted / 5;
-        let grid_x = x as f32 * (grid_size.0 + grid_spacing.0) + grid_offset.0;
-        let grid_y = y as f32 * (grid_size.1 + grid_spacing.1) + grid_offset.1;
-        renderer.draw_coloured_mesh(ctx, highlight_mesh.as_ref(), point(grid_x - 2., grid_y - 2.), (0., 1., 1., 1.).into());
+        let grid_shader = renderer.make_rect_mesh(ctx, grid_size.0 * 1.1, grid_size.1, true, 0.)?;
+        renderer.draw_coloured_mesh(ctx, grid_shader.as_ref(), point(grid_offset.0 - 10., -grid_spacing), (0., 0., 0., 0.75).into());
+        renderer.draw_coloured_mesh(ctx, grid_shader.as_ref(), point(grid_offset.0 - 10., grid_offset.1 - grid_spacing - grid_size.1), (0., 0., 0., 0.4).into());
+        renderer.draw_coloured_mesh(ctx, grid_shader.as_ref(), point(grid_offset.0 - 10., grid_offset.1 + grid_spacing + grid_size.1), (0., 0., 0., 0.4).into());
+        renderer.draw_coloured_mesh(ctx, grid_shader.as_ref(), point(grid_offset.0 - 10., screen_size.1 - grid_size.1 * 0.8), (0., 0., 0., 0.75).into());
 
-        renderer.draw_white_text(ctx, String::from("Choose a map"), point(screen_size.0 / 2., 200.), 48., true);
+        renderer.draw_white_text(ctx, String::from("Choose map and variant"), point(screen_size.0 / 2., 50.), 48., true);
 
         Ok(())
     }
 
-    fn on_button_press(&mut self, keycode: KeyCode) {
+    fn on_button_down(&mut self, keycode: KeyCode) {
         match keycode {
             KeyCode::Up => {
-                if self.highlighted > 4 {
-                    self.highlighted -= 5;
-                }
-            },
-            KeyCode::Down => {
-                if self.highlighted < 5 {
-                    self.highlighted += 5;
-                }
-            },
-            KeyCode::Left => {
                 if self.highlighted > 0 {
                     self.highlighted -= 1;
+                    self.variant_highlighted = 0;
                 }
-            },
-            KeyCode::Right => {
+            }
+            KeyCode::Down => {
                 if self.highlighted < 9 {
                     self.highlighted += 1;
+                    self.variant_highlighted = 0;
                 }
-            },
+            }
+            KeyCode::Left => {
+                if self.variant_highlighted > 0 {
+                    self.variant_highlighted -= 1;
+                }
+            }
+            KeyCode::Right => {
+                if self.variant_highlighted < self.maps[self.highlighted].variants.len() - 1 {
+                    self.variant_highlighted += 1;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn on_button_up(&mut self, keycode: KeyCode) {
+        match keycode {
             KeyCode::Return => {
                 self.selected = Some(self.highlighted);
-            },
+            }
             _ => {}
         }
     }
@@ -168,7 +164,8 @@ impl Scene for MapPicker {
 
     fn get_next_stage_params(&self) -> SceneParams {
         return SceneParams::AlgoSelection {
-            map: self.maps[self.selected.unwrap()].clone()
+            map: self.maps[self.selected.unwrap()].clone(),
+            variant: self.variant_highlighted,
         };
     }
 }

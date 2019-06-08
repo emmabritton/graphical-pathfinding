@@ -8,32 +8,38 @@ use crate::Algo;
 use crate::map_rendering::draw_map_with_costs_path;
 use std::rc::Rc;
 
+struct DiagonalParams {
+    map: Rc<Map>,
+    algo: Algo,
+    variant: usize,
+}
+
 pub struct DiagonalPicker {
-    params: (Rc<Map>, Algo),
+    params: DiagonalParams,
     selected: Option<usize>,
     highlighted: usize,
     diagonal_maps: Vec<(Map, Vec<Coord>)>,
 }
 
 impl DiagonalPicker {
-    pub fn new(params: (Rc<Map>, Algo)) -> DiagonalPicker {
+    pub fn new(map: Rc<Map>, algo: Algo, variant: usize) -> DiagonalPicker {
         DiagonalPicker {
-            params,
+            params: DiagonalParams { map, algo, variant },
             selected: None,
             highlighted: 0,
             diagonal_maps: vec![
                 (Map {
-                    variants: vec![Variant{start: Coord::new(0,0), ends: vec![Coord::new(3,3)]}],
+                    variants: vec![Variant { start: Coord::new(0, 0), ends: vec![Coord::new(3, 3)] }],
                     cost: vec![vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 0, 0, 0]],
-                }, vec![Coord::new(0,0), Coord::new(1,1), Coord::new(2,2), Coord::new(3,3)]),
+                }, vec![Coord::new(0, 0), Coord::new(1, 1), Coord::new(2, 2), Coord::new(3, 3)]),
                 (Map {
-                    variants: vec![Variant{start: Coord::new(0,0), ends: vec![Coord::new(3,3)]}],
+                    variants: vec![Variant { start: Coord::new(0, 0), ends: vec![Coord::new(3, 3)] }],
                     cost: vec![vec![0, 0, 0, 9], vec![0, 0, 9, 0], vec![0, 9, 0, 0], vec![0, 0, 0, 0]],
-                }, vec![Coord::new(0,0), Coord::new(1,0), Coord::new(2,0), Coord::new(3,1), Coord::new(3,2), Coord::new(3,3)]),
+                }, vec![Coord::new(0, 0), Coord::new(1, 0), Coord::new(2, 0), Coord::new(3, 1), Coord::new(3, 2), Coord::new(3, 3)]),
                 (Map {
-                    variants: vec![Variant{start: Coord::new(0,0), ends: vec![Coord::new(3,3)]}],
+                    variants: vec![Variant { start: Coord::new(0, 0), ends: vec![Coord::new(3, 3)] }],
                     cost: vec![vec![0, 0, 0, 9], vec![0, 0, 9, 0], vec![0, 9, 0, 0], vec![9, 0, 0, 0]],
-                }, vec![Coord::new(0,0), Coord::new(1,1), Coord::new(2,2), Coord::new(3,3)])
+                }, vec![Coord::new(0, 0), Coord::new(1, 1), Coord::new(2, 2), Coord::new(3, 3)])
             ],
         }
     }
@@ -105,7 +111,7 @@ impl Scene for DiagonalPicker {
         Ok(())
     }
 
-    fn on_button_press(&mut self, keycode: KeyCode) {
+    fn on_button_down(&mut self, keycode: KeyCode) {
         match keycode {
             KeyCode::Up => {
                 if self.highlighted > 0 {
@@ -117,6 +123,12 @@ impl Scene for DiagonalPicker {
                     self.highlighted += 1;
                 }
             }
+            _ => {}
+        }
+    }
+
+    fn on_button_up(&mut self, keycode: KeyCode) {
+        match keycode {
             KeyCode::Return => self.selected = Some(self.highlighted),
             _ => {}
         }
@@ -129,8 +141,9 @@ impl Scene for DiagonalPicker {
     fn get_next_stage_params(&self) -> SceneParams {
         let diagonal = Diagonal::from_index(self.selected.expect("Nothing selected"));
         SceneParams::HeuristicSelection {
-            map: self.params.0.clone(),
-            algo: self.params.1,
+            map: self.params.map.clone(),
+            algo: self.params.algo,
+            variant: self.params.variant,
             diagonal,
         }
     }

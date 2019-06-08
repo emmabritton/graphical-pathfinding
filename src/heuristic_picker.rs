@@ -11,15 +11,28 @@ use crate::dijkstra::Dijkstra;
 use std::rc::Rc;
 use std::cell::RefCell;
 
+pub struct HeuristicParams {
+    map: Rc<Map>,
+    algo: Algo,
+    diagonal: Diagonal,
+    variant: usize,
+}
+
 pub struct HeuristicPicker {
-    params: (Rc<Map>, Algo, Diagonal, usize),
+    params: HeuristicParams,
     selected: Option<usize>,
     highlighted: usize,
 }
 
 impl HeuristicPicker {
-    pub fn new(params: (Rc<Map>, Algo, Diagonal, usize)) -> HeuristicPicker {
-        if params.1.supported_heuristics() {
+    pub fn new(map: Rc<Map>, algo: Algo, diagonal: Diagonal, variant: usize) -> HeuristicPicker {
+        let params = HeuristicParams {
+            map,
+            algo,
+            diagonal,
+            variant,
+        };
+        if params.algo.supported_heuristics() {
             return HeuristicPicker {
                 params,
                 selected: None,
@@ -29,8 +42,8 @@ impl HeuristicPicker {
             return HeuristicPicker {
                 params,
                 selected: Some(0),
-                highlighted: 0
-            }
+                highlighted: 0,
+            };
         }
     }
 }
@@ -58,7 +71,7 @@ impl Scene for HeuristicPicker {
         Ok(())
     }
 
-    fn on_button_press(&mut self, keycode: KeyCode) {
+    fn on_button_down(&mut self, keycode: KeyCode) {
         match keycode {
             KeyCode::Up => {
                 if self.highlighted > 0 {
@@ -70,6 +83,12 @@ impl Scene for HeuristicPicker {
                     self.highlighted += 1;
                 }
             }
+            _ => {}
+        }
+    }
+
+    fn on_button_up(&mut self, keycode: KeyCode) {
+        match keycode {
             KeyCode::Return => self.selected = Some(self.highlighted),
             _ => {}
         }
@@ -80,7 +99,7 @@ impl Scene for HeuristicPicker {
     }
 
     fn get_next_stage_params(&self) -> SceneParams {
-        let map_clone = self.params.0.clone();
+        let map_clone = self.params.map.clone();
         let columns = map_clone.get_column_count() as i32;
         let rows = map_clone.get_row_count() as i32;
         let heuristic = Heuristic::from_index(self.selected.expect("Nothing selected"));
@@ -91,16 +110,17 @@ impl Scene for HeuristicPicker {
                 map_clone.cost[xy.x as usize][xy.y as usize]
             }
         });
-        let algo: Box<Algorithm> = match self.params.1 {
-            Algo::AStar => Box::new(Astar::new_fixed_target(self.params.0.variants[self.params.3].start, self.params.0.variants[self.params.3].ends.clone(), cost_calc, columns, rows, self.params.2, heuristic)),
-            Algo::Dijkstra => Box::new(Dijkstra::new_fixed_target(self.params.0.variants[self.params.3].start, self.params.0.variants[self.params.3].ends.clone(), cost_calc, columns, rows, self.params.2))
+        let algo: Box<Algorithm> = match self.params.algo {
+            Algo::AStar => Box::new(Astar::new_fixed_target(self.params.map.variants[self.params.variant].start, self.params.map.variants[self.params.variant].ends.clone(), cost_calc, columns, rows, self.params.diagonal, heuristic)),
+            Algo::Dijkstra => Box::new(Dijkstra::new_fixed_target(self.params.map.variants[self.params.variant].start, self.params.map.variants[self.params.variant].ends.clone(), cost_calc, columns, rows, self.params.diagonal))
         };
         SceneParams::AlgoRunner {
-            map: self.params.0.clone(),
+            map: self.params.map.clone(),
             heuristic,
             algo: Rc::new(RefCell::new(algo)),
-            algo_name: self.params.1.name(),
-            diagonal: self.params.2
+            algo_name: self.params.algo.name(),
+            diagonal: self.params.diagonal,
+            variant: self.params.variant,
         }
     }
 }

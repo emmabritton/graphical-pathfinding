@@ -33,7 +33,7 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal_mode: String, heuristic_mode: String) -> Executor {
+    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal_mode: String, heuristic_mode: String, variant: usize) -> Executor {
         Executor {
             map_id: 0,
             map,
@@ -46,7 +46,7 @@ impl Executor {
             last_update: 0.,
             ticks: 0,
             algo_name,
-            variant: 0
+            variant
         }
     }
 }
@@ -116,7 +116,7 @@ impl Scene for Executor {
         Ok(())
     }
 
-    fn on_button_press(&mut self, keycode: KeyCode) {
+    fn on_button_down(&mut self, keycode: KeyCode) {
         match keycode {
             KeyCode::P => self.auto_advance = !self.auto_advance,
             KeyCode::Space => {
@@ -132,6 +132,8 @@ impl Scene for Executor {
             _ => {}
         }
     }
+
+    fn on_button_up(&mut self, _keycode: KeyCode) {}
 
     fn is_complete(&self) -> bool {
         false
