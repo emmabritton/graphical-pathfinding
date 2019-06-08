@@ -1,5 +1,6 @@
 use ggez::{Context, GameResult};
 use crate::{point, Coord, Map, Renderer};
+use crate::maps::node_cost_to_percentage;
 
 //PUBLIC
 
@@ -53,7 +54,7 @@ fn draw_map_costs(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, 
             if cost < 0 {
                 renderer.draw_mesh(ctx, square_mesh.as_ref(), point(map_offset.0 + (map_x as f32 * cell_size), map_offset.1 + (map_y as f32 * cell_size)));
             } else if cost > 0 {
-                let cost_perc = cost as f32 / 10.;
+                let cost_perc = node_cost_to_percentage(cost);
                 let color = (1., 1., 1., cost_perc);
                 renderer.draw_coloured_mesh(ctx, square_mesh.as_ref(), point(map_offset.0 + (map_x as f32 * cell_size), map_offset.1 + (map_y as f32 * cell_size)), color.into());
             }
@@ -101,6 +102,7 @@ fn draw_map_path(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f
     Ok(())
 }
 
+#[allow(dead_code)] //for debugging
 fn draw_debug_node_numbers(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, cols: usize, rows: usize) -> GameResult<()> {
     for map_x in 0..cols {
         for map_y in 0..rows {

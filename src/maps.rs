@@ -31,6 +31,11 @@ impl Map {
     }
 }
 
+#[inline]
+pub fn node_cost_to_percentage(cost: i32) -> f32 {
+    cost as f32 / 10.
+}
+
 pub fn read_map_file(ctx: &mut Context, which: usize) -> Map {
     if let Ok(mut file) = filesystem::open(ctx, format!("/map{}", which)) {
         let mut buffer = String::new();
