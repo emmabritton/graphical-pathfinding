@@ -1,4 +1,4 @@
-use crate::{Scene, point, SceneParams, Astar, Coord, Algorithm};
+use crate::{Scene, point, SceneParams};
 use ggez::{Context, GameError};
 use ggez::event::KeyCode;
 use crate::maps::{Map};
@@ -23,7 +23,7 @@ impl AlgoPicker {
 }
 
 impl Scene for AlgoPicker {
-    fn update(&mut self, ctx: &mut Context) -> Result<(), GameError> {
+    fn update(&mut self, _ctx: &mut Context) -> Result<(), GameError> {
         Ok(())
     }
 
