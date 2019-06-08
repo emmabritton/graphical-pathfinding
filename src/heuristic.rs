@@ -1,15 +1,12 @@
 use crate::Coord;
 use std::cmp::max;
 
-const OCTILE_CONSTANT: f64 = 0.41421356;
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Heuristic {
     None,
     Manhatten,
     Euclidean,
     Chebyshev,
-    Octile,
     Mine
 }
 
@@ -20,13 +17,12 @@ impl Heuristic {
             Heuristic::Manhatten => String::from("Manhatten"),
             Heuristic::Euclidean => String::from("Euclidean"),
             Heuristic::Chebyshev => String::from("Chebyshec"),
-            Heuristic::Octile => String::from("Octile"),
             Heuristic::Mine => String::from("Fast but less accurate"),
         };
     }
 
     pub fn len() -> usize {
-        6
+        5
     }
 
     pub fn from_index(idx: usize) -> Heuristic {
@@ -35,8 +31,7 @@ impl Heuristic {
             1 => Heuristic::Manhatten,
             2 => Heuristic::Euclidean,
             3 => Heuristic::Chebyshev,
-            4 => Heuristic::Octile,
-            5 => Heuristic::Mine,
+            4 => Heuristic::Mine,
             _ => panic!("Invalid index: {}", idx),
         };
     }
@@ -58,13 +53,6 @@ impl Heuristic {
             Heuristic::Manhatten => return dx + dy,
             Heuristic::Euclidean => return ((dx * dx + dy * dy) as f32).sqrt() as i32,
             Heuristic::Chebyshev => return max(dx, dy),
-            Heuristic::Octile => {
-                if dx < dy {
-                    return (OCTILE_CONSTANT * dx as f64) as i32 + dy;
-                } else {
-                    return (OCTILE_CONSTANT * dy as f64) as i32 + dx;
-                }
-            },
             Heuristic::Mine => {
                 return dx.pow(2) + dy.pow(2);
             }
