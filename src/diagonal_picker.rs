@@ -1,16 +1,12 @@
-use crate::{Scene, SceneParams, Coord, Algorithm, point, DPPoint};
+use crate::{Scene, SceneParams, Coord, point, DPPoint};
 use ggez::{Context, GameError, GameResult};
 use ggez::event::KeyCode;
 use crate::maps::Map;
 use crate::renderer::*;
 use crate::Diagonal;
 use crate::Algo;
-use crate::Astar;
-use crate::heuristic::Heuristic;
-use crate::dijkstra::Dijkstra;
 use crate::map_rendering::draw_map_with_costs_path;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 pub struct DiagonalPicker {
     params: (Rc<Map>, Algo),
@@ -27,26 +23,17 @@ impl DiagonalPicker {
             highlighted: 0,
             diagonal_maps: vec![
                 (Map {
-                    idx: 0,
-                    start: Coord { x: 0, y: 0 },
-                    targets: vec![Coord { x: 3, y: 3 }],
+                    variants: vec![Variant{start: Coord::new(0,0), ends: vec![Coord::new(3,3)]}],
                     cost: vec![vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 0, 0, 0], vec![0, 0, 0, 0]],
-                    info: "".to_string(),
-                }, vec![Coord { x: 0, y: 0 }, Coord { x: 1, y: 1 }, Coord { x: 2, y: 2 }, Coord { x: 3, y: 3 }]),
+                }, vec![Coord::new(0,0), Coord::new(1,1), Coord::new(2,2), Coord::new(3,3)]),
                 (Map {
-                    idx: 1,
-                    start: Coord { x: 0, y: 0 },
-                    targets: vec![Coord { x: 3, y: 3 }],
+                    variants: vec![Variant{start: Coord::new(0,0), ends: vec![Coord::new(3,3)]}],
                     cost: vec![vec![0, 0, 0, 9], vec![0, 0, 9, 0], vec![0, 9, 0, 0], vec![0, 0, 0, 0]],
-                    info: "".to_string(),
-                }, vec![Coord { x: 0, y: 0 }, Coord { x: 1, y: 0 }, Coord { x: 2, y: 0 }, Coord { x: 3, y: 1 }, Coord { x: 3, y: 2 }, Coord { x: 3, y: 3 }]),
+                }, vec![Coord::new(0,0), Coord::new(1,0), Coord::new(2,0), Coord::new(3,1), Coord::new(3,2), Coord::new(3,3)]),
                 (Map {
-                    idx: 2,
-                    start: Coord { x: 0, y: 0 },
-                    targets: vec![Coord { x: 3, y: 3 }],
+                    variants: vec![Variant{start: Coord::new(0,0), ends: vec![Coord::new(3,3)]}],
                     cost: vec![vec![0, 0, 0, 9], vec![0, 0, 9, 0], vec![0, 9, 0, 0], vec![9, 0, 0, 0]],
-                    info: "".to_string(),
-                }, vec![Coord { x: 0, y: 0 }, Coord { x: 1, y: 1 }, Coord { x: 2, y: 2 }, Coord { x: 3, y: 3 }])
+                }, vec![Coord::new(0,0), Coord::new(1,1), Coord::new(2,2), Coord::new(3,3)])
             ],
         }
     }
@@ -68,7 +55,7 @@ fn draw_allowed_markers(ctx: &mut Context, renderer: &mut Renderer, map_allowed:
 }
 
 impl Scene for DiagonalPicker {
-    fn update(&mut self, ctx: &mut Context) -> Result<(), GameError> {
+    fn update(&mut self, _ctx: &mut Context) -> Result<(), GameError> {
         Ok(())
     }
 
@@ -140,9 +127,6 @@ impl Scene for DiagonalPicker {
     }
 
     fn get_next_stage_params(&self) -> SceneParams {
-        let map_clone = self.params.0.clone();
-        let columns = map_clone.get_column_count() as i32;
-        let rows = map_clone.get_row_count() as i32;
         let diagonal = Diagonal::from_index(self.selected.expect("Nothing selected"));
         SceneParams::HeuristicSelection {
             map: self.params.0.clone(),

@@ -37,7 +37,7 @@ impl HeuristicPicker {
 }
 
 impl Scene for HeuristicPicker {
-    fn update(&mut self, ctx: &mut Context) -> Result<(), GameError> {
+    fn update(&mut self, _ctx: &mut Context) -> Result<(), GameError> {
         Ok(())
     }
 
