@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use crate::Coord;
 use crate::algo::*;
+use crate::maps::NODE_WALL;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Diagonal {
