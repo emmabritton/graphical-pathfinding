@@ -173,9 +173,7 @@ impl EventHandler for GPath {
         Ok(())
     }
 
-    fn key_down_event(&mut self, _ctx: &mut Context, _keycode: KeyCode, _keymod: KeyMods, _repeat: bool) {}
-
-    fn key_up_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
+    fn key_down_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods, _repeat: bool) {
         match keycode {
             KeyCode::Escape | KeyCode::Q => quit(ctx),
             KeyCode::R => {
@@ -191,6 +189,10 @@ impl EventHandler for GPath {
                 }
             }
         }
+    }
+
+    fn key_up_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
+
     }
 }
 
