@@ -1,10 +1,9 @@
 use std::rc::Rc;
-use crate::models::{Coord, Node};
+use crate::data::{Coord, Node};
+use crate::data::diagonal::Diagonal;
 use crate::std_ext::RcBreaker;
-use crate::Algorithm;
-use crate::{Diagonal};
-use crate::AlgoStatus;
-use crate::AlgoStatus::*;
+use crate::algos::{Algorithm, AlgoStatus};
+use crate::algos::AlgoStatus::*;
 
 pub type CostCalc = Fn(Coord) -> i32;
 pub type IsValidEnd = Fn(Coord) -> bool;

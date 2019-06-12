@@ -1,10 +1,10 @@
 use std::rc::Rc;
-use crate::models::{Coord, Node};
+use crate::data::{Coord, Node};
 use crate::std_ext::RcBreaker;
-use crate::diagonal::Diagonal;
-use crate::heuristic::Heuristic;
-use crate::algo::{Algorithm, AlgoStatus, CostCalc};
-use crate::algo::AlgoStatus::*;
+use crate::data::diagonal::Diagonal;
+use crate::data::heuristic::Heuristic;
+use crate::algos::{Algorithm, AlgoStatus, CostCalc};
+use crate::algos::AlgoStatus::*;
 
 pub struct Astar {
     diagonal: Diagonal,

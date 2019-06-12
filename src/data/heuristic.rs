@@ -1,4 +1,4 @@
-use crate::Coord;
+use crate::data::Coord;
 use std::cmp::max;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

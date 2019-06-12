@@ -1,4 +1,7 @@
-use crate::Coord;
+pub mod astar;
+pub mod dijkstra;
+
+use crate::data::Coord;
 
 pub type CostCalc = Fn(Coord) -> i32;
 

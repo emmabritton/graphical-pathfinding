@@ -1,3 +1,7 @@
+pub mod diagonal;
+pub mod heuristic;
+pub mod maps;
+
 use std::ops::Add;
 use std::ops::Sub;
 use std::fmt::{Display, Formatter};

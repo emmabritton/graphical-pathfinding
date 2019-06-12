@@ -1,10 +1,10 @@
 use crate::{Scene, point, GRID_HORZ_COUNT, GRID_VERT_COUNT, SceneParams};
 use ggez::{Context, GameError};
 use ggez::event::KeyCode;
-use crate::maps::{Map, read_map_file};
-use crate::renderer::*;
+use crate::data::maps::{Map, read_map_file};
+use crate::graphics::renderer::*;
 use std::rc::Rc;
-use crate::map_rendering::{draw_map_with_costs, draw_map_with_costs_start_end};
+use crate::graphics::map_rendering::{draw_map_with_costs, draw_map_with_costs_start_end};
 
 pub struct MapPicker {
     maps: Vec<Rc<Map>>,
