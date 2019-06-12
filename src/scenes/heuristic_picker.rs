@@ -1,13 +1,15 @@
-use crate::{Scene, SceneParams, Coord, Algorithm, point};
 use ggez::{Context, GameError};
 use ggez::event::KeyCode;
-use crate::maps::Map;
-use crate::renderer::*;
-use crate::Diagonal;
-use crate::Algo;
-use crate::Astar;
-use crate::heuristic::Heuristic;
-use crate::dijkstra::Dijkstra;
+use crate::point;
+use crate::data::maps::Map;
+use crate::data::Coord;
+use crate::graphics::renderer::Renderer;
+use crate::data::diagonal::Diagonal;
+use crate::algos::{Algo, Algorithm};
+use crate::algos::astar::Astar;
+use crate::data::heuristic::Heuristic;
+use crate::algos::dijkstra::Dijkstra;
+use crate::scenes::{Scene, SceneParams};
 use std::rc::Rc;
 use std::cell::RefCell;
 

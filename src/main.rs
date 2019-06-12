@@ -1,22 +1,13 @@
 extern crate ggez;
 
-mod astar;
-mod dijkstra;
-mod models;
+mod algos;
+mod data;
+mod graphics;
+mod scenes;
 mod std_ext;
-mod maps;
-mod algo_picker;
-mod map_picker;
-mod renderer;
-mod map_rendering;
-mod executor;
-mod diagonal_picker;
-mod heuristic;
-mod heuristic_picker;
-mod diagonal;
-mod algo;
 
-use ggez::{Context, ContextBuilder, GameResult, graphics, timer};
+use ggez::{Context, ContextBuilder, GameResult, timer};
+use ggez::graphics as ggez_g;
 use ggez::event::{self, EventHandler, KeyMods, KeyCode};
 use ggez::conf::{WindowMode, WindowSetup};
 use ggez::mint::Point2;
@@ -28,19 +19,14 @@ use std::rc::Rc;
 use crate::std_ext::max;
 use std::env;
 use std::path;
-use crate::diagonal_picker::DiagonalPicker;
-use crate::map_picker::MapPicker;
+use crate::graphics::renderer::Renderer;
+use crate::scenes::diagonal_picker::DiagonalPicker;
+use crate::scenes::map_picker::MapPicker;
+use crate::scenes::algo_picker::AlgoPicker;
+use crate::scenes::executor::Executor;
+use crate::scenes::heuristic_picker::HeuristicPicker;
+use crate::scenes::{Scene, SceneParams};
 use std::cell::RefCell;
-use crate::renderer::Renderer;
-use crate::models::Coord;
-use crate::executor::Executor;
-use crate::astar::Astar;
-use crate::maps::Map;
-use crate::algo::{Algorithm, Algo, AlgoStatus};
-use crate::diagonal::*;
-use crate::algo_picker::AlgoPicker;
-use crate::heuristic::Heuristic;
-use crate::heuristic_picker::HeuristicPicker;
 
 pub const SCREEN_WIDTH: f32 = 1920.;
 pub const SCREEN_HEIGHT: f32 = 1080.;
@@ -94,26 +80,9 @@ fn main() {
     }
 }
 
-pub enum SceneParams {
-    AlgoSelection { map: Rc<Map>, variant: usize },
-    DiagonalSelection { map: Rc<Map>, algo: Algo, variant: usize },
-    HeuristicSelection { map: Rc<Map>, algo: Algo, diagonal: Diagonal, variant: usize },
-    AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal: Diagonal, heuristic: Heuristic, variant: usize },
-    Empty,
-}
-
 struct GraphicalPath {
     active_scene: Option<Box<RefCell<Scene>>>,
     renderer: Rc<RefCell<Renderer>>,
-}
-
-trait Scene {
-    fn update(&mut self, ctx: &mut Context) -> GameResult<()>;
-    fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> GameResult<()>;
-    fn on_button_down(&mut self, keycode: KeyCode);
-    fn on_button_up(&mut self, keycode: KeyCode);
-    fn is_complete(&self) -> bool;
-    fn get_next_stage_params(&self) -> SceneParams;
 }
 
 impl GraphicalPath {
@@ -157,7 +126,7 @@ impl EventHandler for GraphicalPath {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx, [0., 0., 0., 1.].into());
+        ggez_g::clear(ctx, [0., 0., 0., 1.].into());
 
         if let Some(scene) = &mut self.active_scene {
             scene.borrow_mut().render(ctx, &mut self.renderer.borrow_mut())?;
@@ -165,7 +134,7 @@ impl EventHandler for GraphicalPath {
 
         self.draw_fps(ctx);
 
-        graphics::present(ctx)?;
+        ggez_g::present(ctx)?;
         timer::yield_now();
         Ok(())
     }

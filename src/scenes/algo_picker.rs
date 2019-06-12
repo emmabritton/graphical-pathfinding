@@ -1,9 +1,10 @@
-use crate::{Scene, point, SceneParams};
+use crate::{point};
+use crate::scenes::{Scene, SceneParams};
 use ggez::{Context, GameError};
 use ggez::event::KeyCode;
-use crate::maps::Map;
-use crate::renderer::*;
-use crate::Algo;
+use crate::data::maps::Map;
+use crate::graphics::renderer::*;
+use crate::algos::Algo;
 use std::rc::Rc;
 
 struct AlgoParams {

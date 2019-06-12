@@ -1,18 +1,18 @@
 use std::rc::Rc;
-use crate::maps::Map;
-use crate::Algorithm;
-use crate::Scene;
-use crate::AlgoStatus;
-use crate::Renderer;
-use crate::SceneParams;
-use crate::SceneParams::Empty;
+use crate::data::maps::Map;
+use crate::algos::Algorithm;
+use crate::scenes::Scene;
+use crate::algos::AlgoStatus;
+use crate::graphics::renderer::Renderer;
+use crate::scenes::SceneParams;
+use crate::scenes::SceneParams::Empty;
 use crate::max;
 use ggez::{Context, GameError, timer};
 use ggez::event::KeyCode;
 use std::cell::RefCell;
 use crate::{point, SCREEN_WIDTH, SCREEN_HEIGHT};
 use ggez::graphics::{Text, TextFragment, Color, Scale, MeshBuilder, DrawMode, Rect};
-use crate::map_rendering::{draw_map_with_costs_nodes, draw_map_with_costs_path, draw_map_with_costs_start_end};
+use crate::graphics::map_rendering::{draw_map_with_costs_nodes, draw_map_with_costs_path, draw_map_with_costs_start_end};
 
 pub const CELL_SIZE: f32 = 60.;
 pub const GRID_START: (f32, f32) = (0., CELL_SIZE);

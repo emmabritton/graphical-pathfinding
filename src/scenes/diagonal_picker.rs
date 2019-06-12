@@ -1,11 +1,13 @@
-use crate::{Scene, SceneParams, Coord, point, DPPoint};
+use crate::{point, DPPoint};
+use crate::data::Coord;
+use crate::scenes::{Scene, SceneParams};
 use ggez::{Context, GameError, GameResult};
 use ggez::event::KeyCode;
-use crate::maps::{Map, Variant};
-use crate::renderer::*;
-use crate::Diagonal;
-use crate::Algo;
-use crate::map_rendering::draw_map_with_costs_path;
+use crate::data::maps::{Map, Variant};
+use crate::graphics::renderer::*;
+use crate::data::diagonal::Diagonal;
+use crate::algos::Algo;
+use crate::graphics::map_rendering::draw_map_with_costs_path;
 use std::rc::Rc;
 
 struct DiagonalParams {

@@ -1,4 +1,4 @@
-use crate::models::Coord;
+use crate::data::Coord;
 use ggez::{Context, filesystem};
 use std::io::Read;
 use crate::{GRID_VERT_COUNT, GRID_HORZ_COUNT};
