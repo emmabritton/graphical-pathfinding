@@ -7,7 +7,7 @@
 #### Keys
 * Anytime:
   * **ESC** or **Q** close
-  * **R** reset
+  * **R** restart program
 * Map:
   * **Up, Down, Left, Right** to highlight map and variant
   * **Enter/Return** to select
