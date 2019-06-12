@@ -53,9 +53,7 @@ impl Heuristic {
             Heuristic::Manhatten => return dx + dy,
             Heuristic::Euclidean => return ((dx * dx + dy * dy) as f32).sqrt() as i32,
             Heuristic::Chebyshev => return max(dx, dy),
-            Heuristic::Mine => {
-                return dx.pow(2) + dy.pow(2);
-            }
+            Heuristic::Mine => return dx.pow(2) + dy.pow(2)
         }
     }
 }
