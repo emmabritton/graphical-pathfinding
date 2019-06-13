@@ -9,6 +9,9 @@ use crate::data::diagonal::Diagonal;
 use crate::algos::Algo;
 use crate::graphics::map_rendering::draw_map_with_costs_path;
 use std::rc::Rc;
+use std::collections::HashMap;
+
+const CURSOR_ID: &'static str = "diagonal_highlighted";
 
 struct DiagonalParams {
     map: Rc<Map>,
@@ -24,11 +27,11 @@ pub struct DiagonalPicker {
 }
 
 impl DiagonalPicker {
-    pub fn new(map: Rc<Map>, algo: Algo, variant: usize) -> DiagonalPicker {
+    pub fn new(map: Rc<Map>, algo: Algo, variant: usize, cursor_mem: &HashMap<&str, usize>) -> DiagonalPicker {
         DiagonalPicker {
             params: DiagonalParams { map, algo, variant },
             selected: None,
-            highlighted: 0,
+            highlighted: *cursor_mem.get(CURSOR_ID).unwrap_or(&0),
             diagonal_maps: vec![
                 (Map {
                     variants: vec![Variant { start: Coord::new(0, 0), ends: vec![Coord::new(3, 3)] }],
@@ -140,7 +143,8 @@ impl Scene for DiagonalPicker {
         return self.selected.is_some();
     }
 
-    fn get_next_stage_params(&self) -> SceneParams {
+    fn get_next_stage_params(&self, cursor_mem: &mut HashMap<&str, usize>) -> SceneParams {
+        cursor_mem.insert(CURSOR_ID, self.highlighted);
         let diagonal = Diagonal::from_index(self.selected.expect("Nothing selected"));
         SceneParams::HeuristicSelection {
             map: self.params.map.clone(),

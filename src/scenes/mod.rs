@@ -11,6 +11,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use crate::data::{maps::Map, diagonal::Diagonal, heuristic::Heuristic};
 use crate::algos::{Algo, Algorithm};
+use std::collections::HashMap;
 
 pub trait Scene {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()>;
@@ -18,7 +19,7 @@ pub trait Scene {
     fn on_button_down(&mut self, keycode: KeyCode);
     fn on_button_up(&mut self, keycode: KeyCode);
     fn is_complete(&self) -> bool;
-    fn get_next_stage_params(&self) -> SceneParams;
+    fn get_next_stage_params(&self, cursor_mem: &mut HashMap<&str, usize>) -> SceneParams;
 }
 
 

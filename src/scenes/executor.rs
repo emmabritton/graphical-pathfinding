@@ -13,6 +13,7 @@ use std::cell::RefCell;
 use crate::{point, SCREEN_WIDTH, SCREEN_HEIGHT};
 use ggez::graphics::{Text, TextFragment, Color, Scale, MeshBuilder, DrawMode, Rect};
 use crate::graphics::map_rendering::{draw_map_with_costs_nodes, draw_map_with_costs_path, draw_map_with_costs_start_end};
+use std::collections::HashMap;
 
 pub const CELL_SIZE: f32 = 60.;
 pub const GRID_START: (f32, f32) = (0., CELL_SIZE);
@@ -33,7 +34,7 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal_mode: String, heuristic_mode: String, variant: usize) -> Executor {
+    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal_mode: String, heuristic_mode: String, variant: usize, _cursor_mem: &HashMap<&str, usize>) -> Executor {
         Executor {
             map_id: 0,
             map,
@@ -139,7 +140,7 @@ impl Scene for Executor {
         false
     }
 
-    fn get_next_stage_params(&self) -> SceneParams {
+    fn get_next_stage_params(&self, _cursor_mem: &mut HashMap<&str, usize>) -> SceneParams {
         Empty
     }
 }
