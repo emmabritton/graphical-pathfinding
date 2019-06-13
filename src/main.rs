@@ -120,7 +120,9 @@ impl EventHandler for GraphicalPath {
                         let executor = Executor::new(map.clone(), algo, algo_name, diagonal.name(), heuristic.name(), variant, &self.cursor_mem);
                         self.active_scene = Some(Box::new(RefCell::new(executor)));
                     }
-                    _ => panic!("Invalid output from active scene")
+                    SceneParams::EndOfProgram => {
+                        quit(ctx);
+                    }
                 }
             }
         }

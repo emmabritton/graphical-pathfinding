@@ -28,5 +28,5 @@ pub enum SceneParams {
     DiagonalSelection { map: Rc<Map>, algo: Algo, variant: usize },
     HeuristicSelection { map: Rc<Map>, algo: Algo, diagonal: Diagonal, variant: usize },
     AlgoRunner { map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal: Diagonal, heuristic: Heuristic, variant: usize },
-    Empty,
+    EndOfProgram
 }
