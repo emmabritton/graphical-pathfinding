@@ -1,11 +1,10 @@
 use std::rc::Rc;
 use crate::data::maps::Map;
 use crate::algos::Algorithm;
-use crate::scenes::Scene;
+use crate::scenes::{Scene, SceneParams::EndOfProgram};
 use crate::algos::AlgoStatus;
 use crate::graphics::renderer::Renderer;
 use crate::scenes::SceneParams;
-use crate::scenes::SceneParams::Empty;
 use crate::max;
 use ggez::{Context, GameError, timer};
 use ggez::event::KeyCode;
@@ -141,6 +140,6 @@ impl Scene for Executor {
     }
 
     fn get_next_stage_params(&self, _cursor_mem: &mut HashMap<&str, usize>) -> SceneParams {
-        Empty
+        EndOfProgram
     }
 }
