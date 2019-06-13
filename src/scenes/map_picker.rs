@@ -5,6 +5,10 @@ use crate::data::maps::{Map, read_map_file};
 use crate::graphics::renderer::*;
 use std::rc::Rc;
 use crate::graphics::map_rendering::{draw_map_with_costs, draw_map_with_costs_start_end};
+use std::collections::HashMap;
+
+const MAP_CURSOR_ID: &'static str = "map_highlighted";
+const VARIANT_CURSOR_ID: &'static str = "variant_highlighted";
 
 pub struct MapPicker {
     maps: Vec<Rc<Map>>,
@@ -14,12 +18,12 @@ pub struct MapPicker {
 }
 
 impl MapPicker {
-    pub fn new() -> MapPicker {
+    pub fn new(cursor_mem: &HashMap<&str, usize>) -> MapPicker {
         MapPicker {
             maps: vec![],
             selected: None,
-            highlighted: 0,
-            variant_highlighted: 0,
+            highlighted: *cursor_mem.get(MAP_CURSOR_ID).unwrap_or(&0),
+            variant_highlighted: *cursor_mem.get(VARIANT_CURSOR_ID).unwrap_or(&0),
         }
     }
 }
@@ -162,7 +166,9 @@ impl Scene for MapPicker {
         return self.selected.is_some();
     }
 
-    fn get_next_stage_params(&self) -> SceneParams {
+    fn get_next_stage_params(&self, cursor_mem: &mut HashMap<&str, usize>) -> SceneParams {
+        cursor_mem.insert(MAP_CURSOR_ID, self.highlighted);
+        cursor_mem.insert(VARIANT_CURSOR_ID, self.variant_highlighted);
         return SceneParams::AlgoSelection {
             map: self.maps[self.selected.unwrap()].clone(),
             variant: self.variant_highlighted,

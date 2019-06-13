@@ -12,6 +12,9 @@ use crate::algos::dijkstra::Dijkstra;
 use crate::scenes::{Scene, SceneParams};
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::collections::HashMap;
+
+const CURSOR_ID: &'static str = "heuristic_highlighted";
 
 pub struct HeuristicParams {
     map: Rc<Map>,
@@ -27,24 +30,25 @@ pub struct HeuristicPicker {
 }
 
 impl HeuristicPicker {
-    pub fn new(map: Rc<Map>, algo: Algo, diagonal: Diagonal, variant: usize) -> HeuristicPicker {
+    pub fn new(map: Rc<Map>, algo: Algo, diagonal: Diagonal, variant: usize, cursor_mem: &HashMap<&str, usize>) -> HeuristicPicker {
         let params = HeuristicParams {
             map,
             algo,
             diagonal,
             variant,
         };
+        let highlighted = *cursor_mem.get(CURSOR_ID).unwrap_or(&0);
         if params.algo.supported_heuristics() {
             return HeuristicPicker {
                 params,
                 selected: None,
-                highlighted: 0,
+                highlighted,
             };
         } else {
             return HeuristicPicker {
                 params,
                 selected: Some(0),
-                highlighted: 0,
+                highlighted,
             };
         }
     }
@@ -100,7 +104,8 @@ impl Scene for HeuristicPicker {
         return self.selected.is_some();
     }
 
-    fn get_next_stage_params(&self) -> SceneParams {
+    fn get_next_stage_params(&self, cursor_mem: &mut HashMap<&str, usize>) -> SceneParams {
+        cursor_mem.insert(CURSOR_ID, self.highlighted);
         let map_clone = self.params.map.clone();
         let columns = map_clone.get_column_count() as i32;
         let rows = map_clone.get_row_count() as i32;

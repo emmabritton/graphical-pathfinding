@@ -27,6 +27,7 @@ use crate::scenes::executor::Executor;
 use crate::scenes::heuristic_picker::HeuristicPicker;
 use crate::scenes::{Scene, SceneParams};
 use std::cell::RefCell;
+use std::collections::HashMap;
 
 pub const SCREEN_WIDTH: f32 = 1920.;
 pub const SCREEN_HEIGHT: f32 = 1080.;
@@ -68,7 +69,7 @@ fn main() {
 
     let mut my_game = GraphicalPath::new();
 
-    let mut picker = MapPicker::new();
+    let mut picker = MapPicker::new(&my_game.cursor_mem);
     if picker.setup(ctx, &mut my_game.renderer.borrow_mut()).is_err() {
         panic!("Failed to setup map picked");
     }
@@ -83,6 +84,7 @@ fn main() {
 struct GraphicalPath {
     active_scene: Option<Box<RefCell<Scene>>>,
     renderer: Rc<RefCell<Renderer>>,
+    cursor_mem: HashMap<&'static str, usize>
 }
 
 impl GraphicalPath {
@@ -90,6 +92,7 @@ impl GraphicalPath {
         return GraphicalPath {
             active_scene: None,
             renderer: Rc::new(RefCell::new(Renderer::new())),
+            cursor_mem: HashMap::new()
         };
     }
 }
@@ -100,21 +103,21 @@ impl EventHandler for GraphicalPath {
             scene.borrow_mut().update(ctx)?;
 
             if scene.borrow_mut().is_complete() {
-                let params = scene.borrow_mut().get_next_stage_params();
+                let params = scene.borrow_mut().get_next_stage_params(&mut self.cursor_mem);
                 match params {
                     SceneParams::DiagonalSelection { map, algo, variant } => {
-                        self.active_scene = Some(Box::new(RefCell::new(DiagonalPicker::new(map, algo, variant))));
+                        self.active_scene = Some(Box::new(RefCell::new(DiagonalPicker::new(map, algo, variant, &self.cursor_mem))));
                     }
                     SceneParams::AlgoSelection { map, variant } => {
-                        let picker = AlgoPicker::new(map.clone(), variant);
+                        let picker = AlgoPicker::new(map.clone(), variant, &self.cursor_mem);
                         self.active_scene = Some(Box::new(RefCell::new(picker)));
                     }
                     SceneParams::HeuristicSelection { map, algo, diagonal, variant } => {
-                        let picker = HeuristicPicker::new(map, algo, diagonal, variant);
+                        let picker = HeuristicPicker::new(map, algo, diagonal, variant, &self.cursor_mem);
                         self.active_scene = Some(Box::new(RefCell::new(picker)));
                     }
                     SceneParams::AlgoRunner { map, algo, algo_name, diagonal, heuristic, variant } => {
-                        let executor = Executor::new(map.clone(), algo, algo_name, diagonal.name(), heuristic.name(), variant);
+                        let executor = Executor::new(map.clone(), algo, algo_name, diagonal.name(), heuristic.name(), variant, &self.cursor_mem);
                         self.active_scene = Some(Box::new(RefCell::new(executor)));
                     }
                     _ => panic!("Invalid output from active scene")
@@ -143,7 +146,7 @@ impl EventHandler for GraphicalPath {
         match keycode {
             KeyCode::Escape | KeyCode::Q => quit(ctx),
             KeyCode::R => {
-                let mut picker = MapPicker::new();
+                let mut picker = MapPicker::new(&self.cursor_mem);
                 if picker.setup(ctx, &mut self.renderer.borrow_mut()).is_err() {
                     panic!("Failed to setup map picked");
                 }

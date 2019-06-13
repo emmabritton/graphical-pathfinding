@@ -6,6 +6,9 @@ use crate::data::maps::Map;
 use crate::graphics::renderer::*;
 use crate::algos::Algo;
 use std::rc::Rc;
+use std::collections::HashMap;
+
+const CURSOR_ID: &'static str = "algo_highlighted";
 
 struct AlgoParams {
     map: Rc<Map>,
@@ -19,11 +22,11 @@ pub struct AlgoPicker {
 }
 
 impl AlgoPicker {
-    pub fn new(map: Rc<Map>, variant: usize) -> AlgoPicker {
+    pub fn new(map: Rc<Map>, variant: usize, cursor_mem: &HashMap<&str, usize>) -> AlgoPicker {
         AlgoPicker {
             params: AlgoParams { map, variant },
             selected: None,
-            highlighted: 0,
+            highlighted: *cursor_mem.get(CURSOR_ID).unwrap_or(&0)
         }
     }
 }
@@ -77,7 +80,8 @@ impl Scene for AlgoPicker {
         return self.selected.is_some();
     }
 
-    fn get_next_stage_params(&self) -> SceneParams {
+    fn get_next_stage_params(&self, cursor_mem: &mut HashMap<&str, usize>) -> SceneParams {
+        cursor_mem.insert(CURSOR_ID, self.highlighted);
         SceneParams::DiagonalSelection {
             map: self.params.map.clone(),
             variant: self.params.variant,
