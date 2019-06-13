@@ -11,9 +11,7 @@ use ggez::graphics as ggez_g;
 use ggez::event::{self, EventHandler, KeyMods, KeyCode};
 use ggez::conf::{WindowMode, WindowSetup};
 use ggez::mint::Point2;
-use ggez::graphics::{Text, Color};
-use ggez::graphics::TextFragment;
-use ggez::graphics::Scale;
+use ggez::graphics::{Text, Color, TextFragment, Scale};
 use ggez::quit;
 use std::rc::Rc;
 use crate::std_ext::max;
@@ -84,7 +82,7 @@ fn main() {
 struct GraphicalPath {
     active_scene: Option<Box<RefCell<Scene>>>,
     renderer: Rc<RefCell<Renderer>>,
-    cursor_mem: HashMap<&'static str, usize>
+    cursor_mem: HashMap<&'static str, usize>,
 }
 
 impl GraphicalPath {
@@ -92,7 +90,7 @@ impl GraphicalPath {
         return GraphicalPath {
             active_scene: None,
             renderer: Rc::new(RefCell::new(Renderer::new())),
-            cursor_mem: HashMap::new()
+            cursor_mem: HashMap::new(),
         };
     }
 }

@@ -2,8 +2,7 @@ use ggez::{Context, GameResult};
 use crate::point;
 use crate::graphics::renderer::Renderer;
 use crate::data::Coord;
-use crate::data::maps::Map;
-use crate::data::maps::node_cost_to_percentage;
+use crate::data::maps::{Map, node_cost_to_percentage};
 
 //PUBLIC
 
