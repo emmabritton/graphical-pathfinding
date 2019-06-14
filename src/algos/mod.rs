@@ -1,5 +1,6 @@
 pub mod astar;
 pub mod dijkstra;
+pub mod path_smoothing;
 
 use crate::data::Coord;
 
@@ -7,7 +8,7 @@ pub type CostCalc = Fn(Coord) -> i32;
 
 pub enum AlgoStatus {
     InProgress((Vec<Coord>, Vec<Coord>)),
-    Found(Vec<Coord>),
+    Found(Vec<Coord>, Vec<Coord>),
     NoPath,
 }
 

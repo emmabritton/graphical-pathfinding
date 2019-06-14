@@ -58,12 +58,12 @@ impl Astar {
                 path.push(current1);
                 current = current2.parent.clone();
             }
+            let closed = self.closed_nodes.iter().map(|item| item.xy.clone()).collect();
             let result: Vec<Coord> = path.iter()
                 .rev()
                 .map(|item| item.xy)
                 .collect();
-
-            self.status = Found(result);
+            self.status = Found(result, closed);
             return;
         }
 

@@ -61,7 +61,7 @@ impl Executor {
         }
         let step_text= match self.algo.borrow().get_data() {
             AlgoStatus::InProgress(_) => format!("{} | Tick {}", advancing_text, self.ticks),
-            AlgoStatus::Found(path) => format!("Found: {} ticks, Path: {} tiles", self.ticks, path.len()),
+            AlgoStatus::Found(path, _) => format!("Found: {} ticks, Path: {} tiles", self.ticks, path.len()),
             AlgoStatus::NoPath => format!("Failed after {} ticks", self.ticks)
         };
         let display = format!("Map: {}  Algo: {}  Diag: {}  Heur: {}  |  {}", self.map_id, self.algo_name, self.diagonal_mode, self.heuristic_mode, step_text);
@@ -93,8 +93,8 @@ impl Scene for Executor {
             AlgoStatus::InProgress((open_nodes, closed_nodes)) => {
                 draw_map_with_costs_nodes(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), open_nodes, closed_nodes, self.variant)?;
             }
-            AlgoStatus::Found(path) => {
-                draw_map_with_costs_path(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), &path, self.variant)?;
+            AlgoStatus::Found(path, closed_nodes) => {
+                draw_map_with_costs_path(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), &path, closed_nodes, self.variant)?;
             }
             AlgoStatus::NoPath => {
                 let text = Text::new(TextFragment {
