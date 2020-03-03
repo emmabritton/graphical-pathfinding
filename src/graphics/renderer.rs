@@ -19,7 +19,6 @@ impl Renderer {
 impl Renderer {
     pub fn get_screen_size(&self, ctx: &mut Context) -> (f32, f32) {
         return graphics::window(ctx).get_inner_size()
-            .map(|size| size.to_physical(graphics::hidpi_factor(ctx) as f64))
             .map(|physical| (physical.width as f32, physical.height as f32))
             .expect("Failed to get/convert window size");
     }

@@ -1,6 +1,5 @@
 pub mod astar;
 pub mod dijkstra;
-pub mod path_smoothing;
 
 use crate::data::Coord;
 

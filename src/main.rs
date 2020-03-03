@@ -12,7 +12,6 @@ use ggez::event::{self, EventHandler, KeyMods, KeyCode};
 use ggez::conf::{WindowMode, WindowSetup};
 use ggez::mint::Point2;
 use ggez::graphics::{Text, Color, TextFragment, Scale};
-use ggez::quit;
 use std::rc::Rc;
 use crate::std_ext::max;
 use std::env;
@@ -119,7 +118,7 @@ impl EventHandler for GraphicalPath {
                         self.active_scene = Some(Box::new(RefCell::new(executor)));
                     }
                     SceneParams::EndOfProgram => {
-                        quit(ctx);
+                        ggez::event::quit(ctx);
                     }
                 }
             }
@@ -144,7 +143,7 @@ impl EventHandler for GraphicalPath {
 
     fn key_down_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods, _repeat: bool) {
         match keycode {
-            KeyCode::Escape | KeyCode::Q => quit(ctx),
+            KeyCode::Escape | KeyCode::Q => ggez::event::quit(ctx),
             KeyCode::R => {
                 let mut picker = MapPicker::new(&self.cursor_mem);
                 if picker.setup(ctx, &mut self.renderer.borrow_mut()).is_err() {
