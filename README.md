@@ -30,3 +30,10 @@
   
   ![Screenshot of runner screen](https://raw.githubusercontent.com/raybritton/graphical-pathfinding/master/screenshot.png)
   ![Legend](https://raw.githubusercontent.com/raybritton/graphical-pathfinding/master/palette.png)
+
+
+#### Map format
+
+Each map file must have 17 lines starting with `M` followed by 32 digits (`0-9`). The digits represent the cost of that tile: 0 being the lowest, 8 the highest and 9 being impassable. 
+
+Then at least one pair of start end co-ords, which consist of a line starting with an `S` then co-ords of the start point, i.e. `4,5` then another line starting with an `E` with a set of different co-ords. You can have as many different pairs as needed.
