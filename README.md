@@ -1,5 +1,10 @@
 ## Graphic Pathfinding
 
+
+![Main](https://github.com/raybritton/graphical-pathfinding/workflows/Main/badge.svg?branch=master)
+[![dependency status](https://deps.rs/repo/github/raybritton/graphical-pathfinding/status.svg)](https://deps.rs/repo/github/raybritton/graphical-pathfinding)
+
+
 (Only has A* and Dijkstra at the moment)
 
 ### This should be run in release mode
