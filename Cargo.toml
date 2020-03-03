@@ -1,6 +1,6 @@
 [package]
 name = "graphical_pathfinding"
-version = "0.4.3"
+version = "0.4.4"
 authors = ["Ray Britton <raybritton@gmail.com>"]
 edition = "2018"
 
