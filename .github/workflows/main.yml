@@ -32,7 +32,7 @@ jobs:
       - name: Install linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt-get install libasound2-dev libudev-dev pkg-config buildessentials
+          sudo apt-get install libasound2-dev libudev-dev pkg-config build-essential
 
       - uses: actions-rs/toolchain@v1
         with:
