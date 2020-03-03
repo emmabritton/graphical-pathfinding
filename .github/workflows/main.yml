@@ -29,6 +29,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          apt-get install libasound2-dev libudev-dev pkg-config buildessentials
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -47,6 +52,8 @@ jobs:
           cd target/${{ matrix.target }}/release
           strip graphical_pathfinding.exe
           7z a ../../../${{ matrix.name }} graphical_pathfinding.exe
+          cd ../../..
+          7z a ${{ matrix.name }} resources/map*
           cd -
 
       - name: Prepare build artifacts [-nix]
@@ -55,6 +62,8 @@ jobs:
           cd target/${{ matrix.target }}/release
           strip graphical_pathfinding
           tar czvf ../../../${{ matrix.name }} graphical_pathfinding
+          cd ../../..
+          7z a ${{ matrix.name }} resources/map*
           cd -
 
       - uses: softprops/action-gh-release@v1
