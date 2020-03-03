@@ -56,8 +56,7 @@ fn main() {
 //        println!("Adding path {:?} from manifest", path);
         cb = cb.add_resource_path(path);
     } else {
-        //path::PathBuf::from("./resources") //might be needed if released
-        panic!("Failed to get resources");
+        path::PathBuf::from("./resources");
     }
 
     let (ctx, event_loop) = &mut cb
