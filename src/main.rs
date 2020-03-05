@@ -26,8 +26,9 @@ use crate::scenes::{Scene, SceneParams};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-pub const SCREEN_WIDTH: f32 = 1920.;
-pub const SCREEN_HEIGHT: f32 = 1080.;
+//This should be a wide screen (16:9) resolution (1920x1080, 1366x768, 1280x720, etc)
+pub const SCREEN_WIDTH: f32 = 1366.;
+pub const SCREEN_HEIGHT: f32 = 768.;
 pub const GRID_VERT_COUNT: usize = 17;
 pub const GRID_HORZ_COUNT: usize = 32;
 
@@ -63,7 +64,7 @@ fn main() {
         .build()
         .expect("Could not create ggez context!");
 
-    let mut my_game = GraphicalPath::new();
+    let mut my_game = GraphicalPath::new(ctx);
 
     let mut picker = MapPicker::new(&my_game.cursor_mem);
     if picker.setup(ctx, &mut my_game.renderer.borrow_mut()).is_err() {
@@ -78,16 +79,16 @@ fn main() {
 }
 
 struct GraphicalPath {
-    active_scene: Option<Box<RefCell<Scene>>>,
+    active_scene: Option<Box<RefCell<dyn Scene>>>,
     renderer: Rc<RefCell<Renderer>>,
     cursor_mem: HashMap<&'static str, usize>,
 }
 
 impl GraphicalPath {
-    fn new() -> GraphicalPath {
+    fn new(ctx: &mut Context) -> GraphicalPath {
         return GraphicalPath {
             active_scene: None,
-            renderer: Rc::new(RefCell::new(Renderer::new())),
+            renderer: Rc::new(RefCell::new(Renderer::new(ctx))),
             cursor_mem: HashMap::new(),
         };
     }

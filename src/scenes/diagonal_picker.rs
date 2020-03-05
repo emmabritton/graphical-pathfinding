@@ -71,45 +71,45 @@ impl Scene for DiagonalPicker {
     }
 
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-        let title_offset = point(360., 50.);
-        let text_offset = point(360., 150.);
-        let text_spacing = 50.;
+        let title_offset = renderer.calc_percent_to_point(0.19, 0.05);
+        let text_offset = renderer.calc_percent_to_point(0.19, 0.14);
+        let text_spacing = renderer.calc_height(0.05);
 
-        let cell_size = 50.;
+        let cell_size = renderer.calc_width(0.03);
         let grid_width = 4. * cell_size;
-        let grid_spacing = 300.;
-        let grid_offset = point(390., 700.);
+        let grid_spacing = renderer.calc_width(0.16);
+        let grid_offset = renderer.calc_percent_to_point(0.2, 0.65);
 
-        let marker_offset = point(grid_offset.x + 55., grid_offset.y + grid_width * 0.9);
+        let marker_size = renderer.calc_width(0.03);
+        let marker_offset = point(grid_offset.x + (grid_width * 0.5) - (marker_size * 0.5), grid_offset.y + grid_width + renderer.calc_height(0.01));
         let marker_spacing = (grid_spacing + grid_width) as f32;
-        let size = 60.;
 
-        let list_mesh = renderer.make_list_indicator_mesh(ctx, 30.)?;
+        let list_mesh = renderer.make_list_indicator_mesh(ctx, renderer.calc_height(0.03))?;
 
-        renderer.draw_white_text(ctx, "Choose how to handle diagonals", title_offset, 48., false);
+        renderer.draw_white_text(ctx, "Choose how to handle diagonals", title_offset, renderer.calc_height(0.04), false);
 
         for i in 0..Diagonal::len() {
-            renderer.draw_white_text(ctx, Diagonal::from_index(i).name(), point(text_offset.x, text_offset.y + (text_spacing * i as f32)), 48., false);
+            renderer.draw_white_text(ctx, Diagonal::from_index(i).name(), point(text_offset.x, text_offset.y + (text_spacing * i as f32)), renderer.calc_height(0.04), false);
         }
 
-        renderer.draw_mesh(ctx, list_mesh.as_ref(), point(text_offset.x - 50., text_offset.y + 8. + (self.highlighted as f32 * text_spacing)));
+        renderer.draw_mesh(ctx, list_mesh.as_ref(), point(text_offset.x - text_spacing, text_offset.y + renderer.calc_height(0.008) + (self.highlighted as f32 * text_spacing)));
 
         for i in 0..self.diagonal_maps.len() {
-            draw_map_with_costs_path(ctx, renderer, (grid_offset.x + (grid_spacing * i as f32 + grid_width * i as f32), grid_offset.y), 40., &self.diagonal_maps[i].0, &self.diagonal_maps[i].1, &vec![],0)?;
+            draw_map_with_costs_path(ctx, renderer, (grid_offset.x + (grid_spacing * i as f32 + grid_width * i as f32), grid_offset.y), renderer.calc_height(0.04), &self.diagonal_maps[i].0, &self.diagonal_maps[i].1, &vec![],0)?;
         }
 
         match Diagonal::from_index(self.highlighted) {
             Diagonal::Never => {
-                draw_allowed_markers(ctx, renderer, [false, false, false], marker_offset, marker_spacing, size)?;
+                draw_allowed_markers(ctx, renderer, [false, false, false], marker_offset, marker_spacing, marker_size)?;
             }
             Diagonal::NoWalls => {
-                draw_allowed_markers(ctx, renderer, [true, false, false], marker_offset, marker_spacing, size)?;
+                draw_allowed_markers(ctx, renderer, [true, false, false], marker_offset, marker_spacing, marker_size)?;
             }
             Diagonal::OneWall => {
-                draw_allowed_markers(ctx, renderer, [true, true, false], marker_offset, marker_spacing, size)?;
+                draw_allowed_markers(ctx, renderer, [true, true, false], marker_offset, marker_spacing, marker_size)?;
             }
             Diagonal::Always => {
-                draw_allowed_markers(ctx, renderer, [true, true, true], marker_offset, marker_spacing, size)?;
+                draw_allowed_markers(ctx, renderer, [true, true, true], marker_offset, marker_spacing, marker_size)?;
             }
         }
 

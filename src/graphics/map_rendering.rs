@@ -49,8 +49,6 @@ pub fn draw_map_with_costs_path(ctx: &mut Context, renderer: &mut Renderer, map_
     Ok(())
 }
 
-//PRIVATE
-
 fn draw_map_grid(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, cols: usize, rows: usize) -> GameResult<()> {
     let grid_mesh = renderer.make_grid_mesh(ctx, cell_size, cols, rows, 160)?;
     renderer.draw_mesh(ctx, grid_mesh.as_ref(), point(map_offset.0, map_offset.1));
@@ -118,7 +116,7 @@ fn draw_map_path(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f
 fn draw_debug_node_numbers(ctx: &mut Context, renderer: &mut Renderer, map_offset: (f32, f32), cell_size: f32, cols: usize, rows: usize) -> GameResult<()> {
     for map_x in 0..cols {
         for map_y in 0..rows {
-            renderer.draw_white_text(ctx, format!("{},{}", map_x, map_y), point(map_offset.0 + map_x as f32 * cell_size, map_offset.1 + map_y as f32 * cell_size), 20., false);
+            renderer.draw_white_text(ctx, format!("{},{}", map_x, map_y), point(map_offset.0 + map_x as f32 * cell_size, map_offset.1 + map_y as f32 * cell_size), renderer.calc_height(0.02), false);
         }
     }
 

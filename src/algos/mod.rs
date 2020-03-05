@@ -3,7 +3,7 @@ pub mod dijkstra;
 
 use crate::data::Coord;
 
-pub type CostCalc = Fn(Coord) -> i32;
+pub type CostCalc = dyn Fn(Coord) -> i32;
 
 pub enum AlgoStatus {
     InProgress((Vec<Coord>, Vec<Coord>)),

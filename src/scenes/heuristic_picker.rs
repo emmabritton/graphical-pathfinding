@@ -60,19 +60,19 @@ impl Scene for HeuristicPicker {
     }
 
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-        let title_offset = point(360., 50.);
-        let text_offset = point(360., 150.);
-        let text_spacing = 50.;
+        let title_offset = renderer.calc_percent_to_point(0.19, 0.05);
+        let text_offset = renderer.calc_percent_to_point(0.19, 0.14);
+        let text_spacing = renderer.calc_height(0.05);
 
-        let list_mesh = renderer.make_list_indicator_mesh(ctx, 30.)?;
+        let list_mesh = renderer.make_list_indicator_mesh(ctx, renderer.calc_height(0.03))?;
 
-        renderer.draw_white_text(ctx, "Choose a heuristic", title_offset, 48., false);
+        renderer.draw_white_text(ctx, "Choose a heuristic", title_offset, renderer.calc_height(0.04), false);
 
         for i in 0..Heuristic::len() {
-            renderer.draw_white_text(ctx, Heuristic::from_index(i).name(), point(text_offset.x, text_offset.y + (text_spacing * i as f32)), 48., false);
+            renderer.draw_white_text(ctx, Heuristic::from_index(i).name(), point(text_offset.x, text_offset.y + (text_spacing * i as f32)), renderer.calc_height(0.04), false);
         }
 
-        renderer.draw_mesh(ctx, list_mesh.as_ref(), point(text_offset.x - 50., text_offset.y + 8. + (self.highlighted as f32 * text_spacing)));
+        renderer.draw_mesh(ctx, list_mesh.as_ref(), point(text_offset.x - text_spacing, text_offset.y + renderer.calc_height(0.008) + (self.highlighted as f32 * text_spacing)));
 
         Ok(())
     }
@@ -117,7 +117,7 @@ impl Scene for HeuristicPicker {
                 map_clone.cost[xy.x as usize][xy.y as usize]
             }
         });
-        let algo: Box<Algorithm> = match self.params.algo {
+        let algo: Box<dyn Algorithm> = match self.params.algo {
             Algo::AStar => Box::new(Astar::new_fixed_target(self.params.map.variants[self.params.variant].start, self.params.map.variants[self.params.variant].ends.clone(), cost_calc, columns, rows, self.params.diagonal, heuristic)),
             Algo::Dijkstra => Box::new(Dijkstra::new_fixed_target(self.params.map.variants[self.params.variant].start, self.params.map.variants[self.params.variant].ends.clone(), cost_calc, columns, rows, self.params.diagonal))
         };

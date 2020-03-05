@@ -5,7 +5,7 @@ use crate::scenes::{Scene, SceneParams::EndOfProgram};
 use crate::algos::AlgoStatus;
 use crate::graphics::renderer::Renderer;
 use crate::scenes::SceneParams;
-use crate::max;
+use crate::{max, GRID_HORZ_COUNT, GRID_VERT_COUNT};
 use ggez::{Context, GameError, timer};
 use ggez::event::KeyCode;
 use std::cell::RefCell;
@@ -14,13 +14,10 @@ use ggez::graphics::{Text, TextFragment, Color, Scale, MeshBuilder, DrawMode, Re
 use crate::graphics::map_rendering::{draw_map_with_costs_nodes, draw_map_with_costs_path, draw_map_with_costs_start_end};
 use std::collections::HashMap;
 
-pub const CELL_SIZE: f32 = 60.;
-pub const GRID_START: (f32, f32) = (0., CELL_SIZE);
-
 pub struct Executor {
     map_id: usize,
     map: Rc<Map>,
-    algo: Rc<RefCell<Box<Algorithm>>>,
+    algo: Rc<RefCell<Box<dyn Algorithm>>>,
     diagonal_mode: String,
     heuristic_mode: String,
     auto_advance: bool,
@@ -33,7 +30,7 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Box<Algorithm>>>, algo_name: String, diagonal_mode: String, heuristic_mode: String, variant: usize, _cursor_mem: &HashMap<&str, usize>) -> Executor {
+    pub fn new(map: Rc<Map>, algo: Rc<RefCell<Box<dyn Algorithm>>>, algo_name: String, diagonal_mode: String, heuristic_mode: String, variant: usize, _cursor_mem: &HashMap<&str, usize>) -> Executor {
         Executor {
             map_id: 0,
             map,
@@ -65,7 +62,7 @@ impl Executor {
             AlgoStatus::NoPath => format!("Failed after {} ticks", self.ticks)
         };
         let display = format!("Map: {}  Algo: {}  Diag: {}  Heur: {}  |  {}", self.map_id, self.algo_name, self.diagonal_mode, self.heuristic_mode, step_text);
-        renderer.draw_white_text(ctx, display, point(8., 4.), 48., false);
+        renderer.draw_white_text(ctx, display, point(8., 4.), renderer.calc_height(0.04), false);
     }
 }
 
@@ -89,12 +86,18 @@ impl Scene for Executor {
     }
 
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
+        let cell_size = renderer.calc_width(0.03);
+        let grid_width = cell_size * (GRID_HORZ_COUNT as f32);
+        let grid_height = cell_size * (GRID_VERT_COUNT as f32);
+        let x = renderer.calc_width(0.5) - (grid_width * 0.5);
+        let y = renderer.calc_height(0.5) - (grid_height * 0.5) + (cell_size * 0.5);
+        let grid_start = (x, y);
         match self.algo.borrow().get_data() {
             AlgoStatus::InProgress((open_nodes, closed_nodes)) => {
-                draw_map_with_costs_nodes(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), open_nodes, closed_nodes, self.variant)?;
+                draw_map_with_costs_nodes(ctx, renderer, grid_start, cell_size, self.map.clone().as_ref(), open_nodes, closed_nodes, self.variant)?;
             }
             AlgoStatus::Found(path, closed_nodes) => {
-                draw_map_with_costs_path(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), &path, closed_nodes, self.variant)?;
+                draw_map_with_costs_path(ctx, renderer, grid_start, cell_size, self.map.clone().as_ref(), &path, closed_nodes, self.variant)?;
             }
             AlgoStatus::NoPath => {
                 let text = Text::new(TextFragment {
@@ -105,7 +108,7 @@ impl Scene for Executor {
                 });
                 let mesh = MeshBuilder::new().rectangle(DrawMode::fill(), Rect::new(0., 0., SCREEN_WIDTH, SCREEN_HEIGHT * 0.12), (0, 0, 0).into()).build(ctx)?;
 
-                draw_map_with_costs_start_end(ctx, renderer, GRID_START, CELL_SIZE, self.map.clone().as_ref(), self.variant)?;
+                draw_map_with_costs_start_end(ctx, renderer, grid_start, cell_size, self.map.clone().as_ref(), self.variant)?;
                 renderer.draw_mesh(ctx, &mesh, point(0., SCREEN_HEIGHT * 0.44));
                 renderer.draw_mesh(ctx, &text, point(SCREEN_WIDTH * 0.5 - 150., SCREEN_HEIGHT * 0.47));
             }

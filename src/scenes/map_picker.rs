@@ -64,12 +64,12 @@ impl Scene for MapPicker {
     }
 
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-        let screen_size = renderer.get_screen_size(ctx);
+        let screen_size = Renderer::get_screen_size(ctx);
         let cell_size = MapPicker::get_cell_size_for_screen(screen_size);
         let grid_size = (cell_size * GRID_HORZ_COUNT as f32, cell_size * GRID_VERT_COUNT as f32);
         let grid_spacing = screen_size.1 * 0.05;
-        let indicator_size = 30.;
-        let indicator_spacing = 30.;
+        let indicator_size = renderer.calc_height(0.03);
+        let indicator_spacing = renderer.calc_height(0.03);
         let variant_spacing = (screen_size.0 - (grid_size.0 * 4.) - (indicator_spacing * 2.) - indicator_size) * 0.3;
 
         let grid_offset = (grid_spacing, (screen_size.1 * 0.5) - (grid_size.1 * 0.5));
@@ -120,7 +120,7 @@ impl Scene for MapPicker {
         renderer.draw_coloured_mesh(ctx, grid_shader.as_ref(), point(grid_offset.0 - 10., grid_offset.1 + grid_spacing + grid_size.1), (0., 0., 0., 0.4).into());
         renderer.draw_coloured_mesh(ctx, grid_shader.as_ref(), point(grid_offset.0 - 10., screen_size.1 - grid_size.1 * 0.8), (0., 0., 0., 0.75).into());
 
-        renderer.draw_white_text(ctx, String::from("Choose map and variant"), point(screen_size.0 / 2., 50.), 48., true);
+        renderer.draw_white_text(ctx, String::from("Choose map and variant"), point(screen_size.0 / 2., 50.), renderer.calc_height(0.04), true);
 
         Ok(())
     }
