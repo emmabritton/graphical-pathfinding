@@ -37,18 +37,18 @@ impl Scene for AlgoPicker {
     }
 
     fn render(&mut self, ctx: &mut Context, renderer: &mut Renderer) -> Result<(), GameError> {
-        let offset = (360., 150.);
-        let line_height = 50.;
+        let offset = renderer.calc_percent_to_px(0.19, 0.14);
+        let line_height = renderer.calc_height(0.05);
 
-        let list_mesh = renderer.make_list_indicator_mesh(ctx, 30.)?;
+        let list_mesh = renderer.make_list_indicator_mesh(ctx, renderer.calc_height(0.03))?;
 
         for i in 0..Algo::len() {
-            renderer.draw_white_text(ctx, Algo::from_index(i).name(), point(offset.0, offset.1 + (line_height * i as f32)), 48., false);
+            renderer.draw_white_text(ctx, Algo::from_index(i).name(), point(offset.0, offset.1 + (line_height * i as f32)), renderer.calc_height(0.04), false);
         }
 
-        renderer.draw_mesh(ctx, list_mesh.as_ref(), point(310., offset.1 + 8. + (self.highlighted as f32 * line_height)));
+        renderer.draw_mesh(ctx, list_mesh.as_ref(), point(renderer.calc_width(0.16), offset.1 + renderer.calc_height(0.008) + (self.highlighted as f32 * line_height)));
 
-        renderer.draw_white_text(ctx, String::from("Choose an algorithm"), point(360., 48.), 48., false);
+        renderer.draw_white_text(ctx, String::from("Choose an algorithm"), renderer.calc_percent_to_point(0.19, 0.04), renderer.calc_height(0.04), false);
 
         Ok(())
     }

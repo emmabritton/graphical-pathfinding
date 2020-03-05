@@ -5,8 +5,8 @@ use crate::std_ext::RcBreaker;
 use crate::algos::{Algorithm, AlgoStatus};
 use crate::algos::AlgoStatus::*;
 
-pub type CostCalc = Fn(Coord) -> i32;
-pub type IsValidEnd = Fn(Coord) -> bool;
+pub type CostCalc = dyn Fn(Coord) -> i32;
+pub type IsValidEnd = dyn Fn(Coord) -> bool;
 
 pub struct Dijkstra {
     diagonal: Diagonal,

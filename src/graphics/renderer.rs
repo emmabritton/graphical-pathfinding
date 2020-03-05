@@ -5,22 +5,45 @@ use ggez::{Context, GameResult, graphics};
 use crate::{DPPoint, point};
 
 pub struct Renderer {
+    width: f32,
+    height: f32,
     mesh_cache: HashMap<String, Rc<Mesh>>
 }
 
 impl Renderer {
-    pub fn new() -> Renderer {
+    pub fn new(ctx: &mut Context) -> Renderer {
+        let (width, height) = Renderer::get_screen_size(ctx);
         Renderer {
+            width,
+            height,
             mesh_cache: HashMap::new()
         }
     }
 }
 
 impl Renderer {
-    pub fn get_screen_size(&self, ctx: &mut Context) -> (f32, f32) {
+    pub fn get_screen_size(ctx: &mut Context) -> (f32, f32) {
         return graphics::window(ctx).get_inner_size()
             .map(|physical| (physical.width as f32, physical.height as f32))
             .expect("Failed to get/convert window size");
+    }
+}
+
+impl Renderer {
+    pub fn calc_percent_to_point(&self, x: f32, y: f32) -> DPPoint {
+        return point(x * self.width, y * self.height);
+    }
+
+    pub fn calc_percent_to_px(&self, x: f32, y: f32) -> (f32, f32) {
+        return (x * self.width, y * self.height);
+    }
+
+    pub fn calc_width(&self, percent: f32) -> f32 {
+        return self.width * percent;
+    }
+
+    pub fn calc_height(&self, percent: f32) -> f32 {
+        return self.height * percent;
     }
 
     pub fn make_grid_mesh(&mut self, ctx: &mut Context, cell_size: f32, horz_count: usize, vert_count: usize, intensity: u8) -> GameResult<Rc<Mesh>> {
